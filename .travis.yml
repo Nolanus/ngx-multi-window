@@ -34,7 +34,7 @@ install:
 
 script:
   # Execute the tests
-  # - npm test
+ - npm test
 
 after_success:
   - ./deploy.sh

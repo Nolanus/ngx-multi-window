@@ -1,0 +1,44 @@
+sudo: required
+
+language: node_js
+
+services:
+  - docker
+
+#addons:
+#  sauce_connect: true
+
+env:
+  global:
+  - ENCRYPTION_LABEL: "7cec43065660"
+  - COMMIT_AUTHOR_EMAIL: "sebastian.fuss@googlemail.com"
+
+node_js:
+  - "6"
+
+before_install:
+
+install:
+  - npm install
+  - cd demo/
+  # Install the demo app deps
+  - npm install
+   # Build the demo app
+  - node_modules/.bin/ng build --prod
+  - export DEMO_DIST=$(pwd)/dist
+  - echo $DEMO_DIST
+  # Start the docker container that serves the example app
+  - docker run --name ng2mwDemo -v $(pwd)/angular.nginx.conf:/etc/nginx/conf.d/angular.nginx.conf:ro -v $DEMO_DIST:/app:ro -d -p 127.0.0.1:8000:8000 nginx
+  - sleep 3 # give the server a jump start
+  - cd ../
+
+script:
+  # Execute the tests
+  # - npm test
+
+after_success:
+  - ./deploy.sh
+
+after_script:
+  - docker stop ng2mwDemo
+  - docker rm ng2mwDemo

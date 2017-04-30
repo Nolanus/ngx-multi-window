@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="header clearfix">
+    <nav>
+      <ul class="nav nav-pills float-right">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/Nolanus/ng2-multi-window">Github</a>
+        </li>
+      </ul>
+    </nav>
+    <h3 class="text-muted">Angular2 Multi-Window</h3>
+  </div>
+
+  <div class="jumbotron">
+    <h1 class="display-3">Talking Tabs!</h1>
+    <p class="lead">Cross-Window/Tab communcation in angular2 for multi-window applications.</p>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <h3>Communication Log</h3>
+    </div>
+    <div class="col-12 logc">
+      <p *ngFor="let log of logs">{{ log }}</p>
+      <p class="text-muted" *ngIf="!logs.length">No communication so far, start sending messages!</p>
+    </div>
+  </div>
+
+  <div class="row marketing">
+    <div class="col-md-4">
+      <h3>Current Window</h3>
+      <div class="form-group">
+        <label>ID</label>
+        <p class="form-control-static">{{ ownId }}</p>
+      </div>
+      <div class="form-group">
+        <label for="windowNameInput">Name</label>
+        <input type="text" class="form-control" id="windowNameInput" [(ngModel)]="newName" required>
+      </div>
+      <button type="submit" class="btn btn-primary" (click)="changeName();">Change name</button>
+    </div>
+
+    <div class="col-md-4">
+      <h3>Registered Windows</h3>
+      <p>
+        <a class="btn btn-secondary" (click)="newWindow()">Open a new Window</a>
+      </p>
+      <div class="list-group" *ngFor="let window of windows">
+        <button class="list-group-item list-group-item-action" (click)="recipientInput.value = window.id"
+                [class.active]="window.id === ownId" [disabled]="window.id === ownId">{{ window.name }} ({{
+          window.id }})
+        </button>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <h3>Send Message</h3>
+      <form>
+        <div class="form-group">
+          <label for="recipientInput">Recipient Window Id</label>
+          <input type="text" class="form-control" id="recipientInput" #recipientInput required readonly>
+          <small id="recipientInputHelp" class="form-text text-muted">Select a window from the list of known windows
+          </small>
+        </div>
+        <div class="form-group">
+          <label for="messageInput">Message</label>
+          <input type="text" class="form-control" id="messageInput" #messageInput required>
+        </div>
+        <button type="submit" class="btn btn-primary"
+                (click)="sendMessage(recipientInput.value, messageInput.value);messageInput.value = ''">Submit
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; Company 2017</p>
+  </footer>
+
+</div> <!-- /container -->
+

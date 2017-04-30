@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "declaration": true,
+    "removeComments": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": false,
+    "listFiles": false,
+    "noLib": false,
+    "lib": [
+      "es2016",
+      "dom"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": [
+      "core-js"
+    ]
+  },
+  "include": [
+    "./ng2-multi-window.ts"
+  ],
+  "angularCompilerOptions": {
+    "skipMetadataEmit": false,
+    "skipTemplateCodegen": true
+  }
+}

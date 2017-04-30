@@ -59,7 +59,6 @@ export class AppComponent {
         this.logs.unshift('The new window with id ' + newWindowData.windowId + ' got created and starts consuming messages');
       }
     );
-    window.open('/?' + newWindowData.urlString);
-    window.open('/', newWindowData.urlString);
+    window.open('?' + newWindowData.urlString);
   }
 }

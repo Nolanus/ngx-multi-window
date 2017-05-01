@@ -46,8 +46,8 @@
       </p>
       <div class="list-group" *ngFor="let window of windows">
         <button class="list-group-item list-group-item-action" (click)="recipientInput.value = window.id"
-                [class.active]="window.id === ownId" [disabled]="window.id === ownId">{{ window.name }} ({{
-          window.id }})
+                [class.active]="window.self" [class.list-group-item-warning]="window.stalled" [disabled]="window.self">
+          {{ window.name }} ({{ window.id }})
         </button>
       </div>
     </div>

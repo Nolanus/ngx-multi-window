@@ -2,7 +2,7 @@ export class MultiWindowConfig {
 
     /**
      * String to be used as prefix when storing data in the localstorage
-      * @type {string}
+     * @type {string}
      */
     public static keyPrefix = 'ng2mw_';
 
@@ -34,5 +34,4 @@ export class MultiWindowConfig {
      * @type {number}
      */
     public static windowTimeout = 15000;
-
 }

@@ -1,10 +1,10 @@
 import {Injectable, Optional} from '@angular/core';
 import {Location} from '@angular/common';
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, BehaviorSubject} from 'rxjs';
 
 import {StorageService} from './storage.service';
 import {MultiWindowConfig} from './multi-window.config';
-import {WindowData, AppWindow} from './window.type';
+import {WindowData, AppWindow, KnownAppWindow} from './window.type';
 import {Message, MessageType, MessageTemplate} from './message.type';
 
 @Injectable()
@@ -15,13 +15,31 @@ export class MultiWindowService {
     private heartbeatId: number = -1;
     private windowScanId: number = -1;
 
-    private messageSubject: Subject<Message> = new Subject<Message>();
-    private windowSubject: Subject<WindowData[]> = new Subject<WindowData[]>();
-    private knownWindows: WindowData[] = [];
+    private knownWindows: KnownAppWindow[] = [];
 
+    /**
+     * A hash that keeps track of subjects for all send messages
+     * @type {{}}
+     */
     private messageTracker: {[key: string]: Subject<string>} = {};
 
+    /**
+     * A copy of the outbox that is regularly written to the local storage
+     * @type {{}}
+     */
     private outboxCache: {[key: string]: Message} = {};
+
+    /**
+     * A subject to subscribe to in order to get notified about messages send to this window
+     * @type {Subject<Message>}
+     */
+    private messageSubject: Subject<Message> = new Subject<Message>();
+
+    /**
+     * A subjct to subscribe to in order to get notified about all known windows
+     * @type {BehaviorSubject<WindowData[]>}
+     */
+    private windowSubject: Subject<KnownAppWindow[]> = new BehaviorSubject<KnownAppWindow[]>(this.knownWindows);
 
     private static generateId(): string {
         return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
@@ -82,7 +100,10 @@ export class MultiWindowService {
 
     /**
      * An observable to subscribe to. It emits the array of known windows
-     * whenever it is read again from the localstorage
+     * whenever it is read again from the localstorage.
+     *
+     * This Observable emits the last list of known windows on subscription
+     * (refer to rxjs BehaviorSubject).
      *
      * Use {@link getKnownWindows} to get the current list of
      * known windows or if you only need a snapshot of that list.
@@ -94,6 +115,14 @@ export class MultiWindowService {
         return this.windowSubject.asObservable();
     }
 
+    /**
+     * Get the latest list of known windows.
+     *
+     * Use {@link onWindows} to get an observable which emits
+     * whenever is updated.
+     *
+     * @returns {WindowData[]}
+     */
     public getKnownWindows() {
         return this.knownWindows;
     }
@@ -190,6 +219,7 @@ export class MultiWindowService {
         });
 
         this.messageTracker[messageId] = new Subject<string>();
+
         return {
             windowId: newWindowId,
             urlString: MultiWindowService.generateWindowKey(newWindowId),
@@ -206,23 +236,26 @@ export class MultiWindowService {
             windowData = this.storageService.getLocalObject<WindowData>(windowKey);
         }
 
-        // Scan for already existing windows
-        this.scanForWindows();
-
         if (windowData !== null) {
             // Restore window information from storage
             this.myWindow = {
                 id: windowData.id,
-                name: windowData.name
+                name: windowData.name,
+                heartbeat: windowData.heartbeat
             };
         } else {
+            let myWindowId = windowId || MultiWindowService.generateId();
             this.myWindow = {
-                id: windowId || MultiWindowService.generateId(),
-                name: 'AppWindow ' + (this.knownWindows.length + 1)
+                id: myWindowId,
+                name: 'AppWindow ' + myWindowId,
+                heartbeat: -1
             };
         }
 
         this.storageService.setWindowName(windowKey);
+
+        // Scan for already existing windows
+        this.scanForWindows();
 
         // Trigger heartbeat for the first time
         this.heartbeat();
@@ -244,6 +277,7 @@ export class MultiWindowService {
             payload,
             send: false
         };
+
         return messageId;
     }
 
@@ -266,10 +300,11 @@ export class MultiWindowService {
             if (window.id === this.myWindow.id) {
                 // Ignore messages from myself (not done using Array.filter to reduce array iterations)
                 // but check for proper last heartbeat time
-                if (now - window.heartbeat < (MultiWindowConfig.heartbeat / 2)) {
+                if (this.myWindow.heartbeat !== -1 && this.myWindow.heartbeat !== window.heartbeat) {
                     console.log('Window ' + this.myWindow.id + '  detected that there is probably another instance with' +
-                        ' this id (time delta is ' + (now - window.heartbeat) + ')');
-                    // The last heartbeat was too short ago, there are probably two app windows
+                        ' this id)');
+                    // The heartbeat value in the localstorage is a different one than the one we wrote into localstorage
+                    // during our last heartbeat. There are probably two app windows
                     // using the same window id => change the current windows id
                     this.myWindow.id = MultiWindowService.generateId();
                     console.log('Window ' + window.id + ' changed id to ' + this.myWindow.id);
@@ -283,11 +318,12 @@ export class MultiWindowService {
                 this.storageService.removeLocalItem(MultiWindowService.generateWindowKey(window.id));
             }
 
-            // Update the windows name
+            // Update the windows name and heartbeat value in the list of known windows (that's what we iterate over)
             windowData.name = window.name;
+            windowData.heartbeat = window.heartbeat;
 
             if (window.messages && window.messages.length > 0) {
-                // This other window has messages, iterate over the messages the other window has
+                // This other window has messages, so iterate over the messages the other window has
                 window.messages.forEach(message => {
                     if (message.recipientId !== this.myWindow.id) {
                         // The message is not targeted to the current window
@@ -374,16 +410,30 @@ export class MultiWindowService {
             name: this.myWindow.name,
             messages: Object.keys(this.outboxCache).map(key => this.outboxCache[key])
         });
+
+        if (this.myWindow.heartbeat === -1) {
+            // This was the first heartbeat run for the local window, so rescan for known windows to get
+            // the current (new) window in the list
+            this.scanForWindows();
+        }
+
+        // Store the new heartbeat value in the local windowData copy
+        this.myWindow.heartbeat = now;
     }
 
     private scanForWindows = () => {
         this.knownWindows =
             this.storageService.getLocalObjects<WindowData>(
                 this.storageService.getLocalItemKeys().filter(MultiWindowService.isWindowKey)
-            ).map(({id, name}: WindowData) => {
-                return {id, name};
+            ).map(({id, name, heartbeat}: WindowData) => {
+                return {
+                    id,
+                    name,
+                    heartbeat,
+                    stalled: new Date().getTime() - heartbeat > MultiWindowConfig.heartbeat * 2,
+                    self: this.myWindow.id === id
+                };
             });
         this.windowSubject.next(this.knownWindows);
     }
-
 }

@@ -1,8 +1,14 @@
 import {Message} from './message.type';
 
 export interface WindowData {
+    heartbeat: number;
     id: string;
     name: string;
+}
+
+export interface KnownAppWindow extends WindowData {
+    stalled: boolean;
+    self: boolean;
 }
 
 /**
@@ -14,6 +20,5 @@ export interface WindowData {
  * of the global variable "window".
  */
 export interface AppWindow extends WindowData {
-    heartbeat: number;
     messages: Message[];
 }

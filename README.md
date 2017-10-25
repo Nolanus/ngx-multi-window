@@ -1,6 +1,15 @@
-# ngx-multi-window
+# ngx-multi-window [![npm version](https://img.shields.io/npm/v/ngx-multi-window.svg?style=flat)](https://www.npmjs.com/package/ngx-multi-window) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 Pull-based cross-window communication for multi-window angular applications
+
+[![Build Status](https://travis-ci.org/Nolanus/ngx-multi-window.svg?branch=master)](https://travis-ci.org/Nolanus/ngx-multi-window)
+[![Dependency Status](https://david-dm.org/Nolanus/ngx-multi-window.svg)](https://david-dm.org/Nolanus/ngx-multi-window)
+[![devDependency Status](https://david-dm.org/Nolanus/ngx-multi-window/dev-status.svg)](https://david-dm.org/Nolanus/ngx-multi-window?type=dev)
+[![peerDependency Status](https://david-dm.org/Nolanus/ngx-multi-window/peer-status.svg)](https://david-dm.org/Nolanus/ngx-multi-window?type=peer)
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Nolanus/ngx-multi-window.svg)](https://greenkeeper.io/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b175dcd8585a42bdbdb9c1ee2a313b3b)](https://www.codacy.com/app/sebastian-fuss/ngx-multi-window?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Nolanus/ngx-multi-window&amp;utm_campaign=Badge_Grade)
 
 ## Features
 

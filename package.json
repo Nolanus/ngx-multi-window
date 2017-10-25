@@ -1,5 +1,5 @@
 {
-  "name": "ng2-multi-window",
+  "name": "ngx-multi-window",
   "version": "0.1.0",
   "description": "Cross-window communication for multi-window angular applications",
   "scripts": {
@@ -8,7 +8,7 @@
     "bundle:create": "npm run bundle:clean && npm run rollup && npm run rollup:min",
     "bundle:clean": "rimraf bundles",
     "demo": "npm install && npm run demo:clean && npm run demo:start",
-    "demo:clean": "cd demo/ && npm uninstall ng2-multi-window && npm install",
+    "demo:clean": "cd demo/ && npm uninstall ngx-multi-window && npm install",
     "demo:start": "cd demo/ && npm start",
     "lint": "npm run lint:code && npm run lint:test",
     "lint:code": "tslint ./src/**/*.ts -t verbose --exclude ./src/**/*.d.ts",
@@ -20,17 +20,22 @@
     "test": "exit 0",
     "webdriver:init": "webdriver-manager update"
   },
-  "main": "bundles/ng2-multi-window.umd.js",
-  "module": "ng2-multi-window.js",
-  "typings": "ng2-multi-window.d.ts",
+  "main": "bundles/ngx-multi-window.umd.js",
+  "module": "ngx-multi-window.js",
+  "typings": "ngx-multi-window.d.ts",
   "keywords": [
+    "ng",
+    "angular",
     "angular2",
     "angularjs",
     "multi",
     "window",
+    "cross",
     "tab",
     "multiwindow",
+    "crosswindow",
     "multitab",
+    "crosstab",
     "localstorage",
     "communcation"
   ],
@@ -38,12 +43,15 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/Nolanus/ng2-multi-window.git"
+    "url": "git+ssh://git@github.com/Nolanus/ngx-multi-window.git"
   },
   "bugs": {
-    "url": "https://github.com/Nolanus/ng2-multi-window/issues"
+    "url": "https://github.com/Nolanus/ngx-multi-window/issues"
   },
-  "homepage": "https://github.com/Nolanus/ng2-multi-window#readme",
+  "homepage": "https://github.com/Nolanus/ngx-multi-window#readme",
+  "dependencies": {
+    "rxjs": "^5.3.0"
+  },
   "peerDependencies": {
     "@angular/core": "^4.1.0",
     "@angular/common": "^4.1.0",
@@ -59,11 +67,11 @@
     "@types/core-js": "^0.9.41",
     "codelyzer": "^3.0.1",
     "rimraf": "^2.5.4",
-    "rollup": "^0.41.4",
-    "rollup-plugin-uglify": "^1.0.2",
+    "rollup": "^0.50.0",
+    "rollup-plugin-uglify": "^2.0.1",
     "rxjs": "^5.3.0",
     "tslint": "^5.1.0",
-    "typescript": "~2.3.2",
+    "typescript": "~2.3.3",
     "zone.js": "^0.8.9"
   }
 }

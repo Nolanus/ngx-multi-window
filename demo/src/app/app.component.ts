@@ -1,6 +1,5 @@
-import {Component} from '@angular/core';
-import {MultiWindowService, WindowData, Message} from 'ng2-multi-window';
-
+import { Component } from '@angular/core';
+import { MultiWindowService, WindowData, Message } from 'ngx-multi-window';
 
 @Component({
   selector: 'app-root',

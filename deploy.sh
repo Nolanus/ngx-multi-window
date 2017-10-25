@@ -35,7 +35,7 @@ cd ghpages
 
 # Adjust the baseurl href property to meet the one of github pages
 echo "Adjust base href"
-sed -i -e 's/base href="\/"/base href="\/ng2-multi-window\/"/g' index.html
+sed -i -e 's/base href="\/"/base href="\/ngx-multi-window\/"/g' index.html
 
 # Configure git
 echo "Configure git"

@@ -1,17 +1,21 @@
 export default {
-    entry     : 'ng2-multi-window.js',
-    dest      : 'bundles/ng2-multi-window.umd.js',
-    format    : 'umd',
-    external  : [
+    input: 'ngx-multi-window.js',
+    output: {
+        file: 'bundles/ngx-multi-window.umd.js',
+        format: 'umd'
+    },
+    external: [
         '@angular/core',
         '@angular/router',
         '@angular/platform-browser',
-        '@angular/common'
+        '@angular/common',
+        'rxjs'
     ],
-    globals   : {
+    globals: {
         '@angular/core': 'ng.core',
         '@angular/platform-browser': 'ng.platform-browser',
-        '@angular/common': 'ng.common'
+        '@angular/common': 'ng.common',
+        'rxjs': 'rxjs'
     },
-    moduleName: 'ng2.multi.window',
+    name: 'ngx.multi.window'
 }

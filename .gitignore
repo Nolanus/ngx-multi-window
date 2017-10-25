@@ -123,12 +123,12 @@ Temporary Items
 # Typescript typings
 typings
 
-# ng2-multi-window specific
+# ngx-multi-window specific
 *.js.map
 *.d.ts
 *.metadata.json
 *.ngsummary.json
-ng2-multi-window.js
+ngx-multi-window.js
 src/*.js
 bundles/*.js
 /test/e2e/*.js

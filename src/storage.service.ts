@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Optional, SkipSelf} from '@angular/core';
 
 @Injectable()
 export class StorageService {
@@ -148,3 +148,15 @@ export class StorageService {
         return Object.keys(storage);
     }
 }
+
+/* singleton pattern taken from https://github.com/angular/angular/issues/13854 */
+export function StorageServiceProviderFactory(parentDispatcher: StorageService) {
+    return parentDispatcher || new StorageService();
+}
+
+export const StorageServiceProvider = {
+    provide: StorageService,
+    deps: [[new Optional(), new SkipSelf(), StorageService]],
+    useFactory: StorageServiceProviderFactory
+};
+

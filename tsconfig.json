@@ -26,7 +26,7 @@
     ]
   },
   "include": [
-    "./ng2-multi-window.ts",
+    "./ngx-multi-window.ts",
     "./test/**/*.ts"
   ]
 }

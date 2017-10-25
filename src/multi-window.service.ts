@@ -1,19 +1,19 @@
-import {Injectable, Optional} from '@angular/core';
-import {Location} from '@angular/common';
-import {Observable, Subject, BehaviorSubject} from 'rxjs';
+import { Injectable, Optional, SkipSelf } from '@angular/core';
+import { Location } from '@angular/common';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 
-import {StorageService} from './storage.service';
-import {MultiWindowConfig} from './multi-window.config';
-import {WindowData, AppWindow, KnownAppWindow} from './window.type';
-import {Message, MessageType, MessageTemplate} from './message.type';
+import { StorageService } from './storage.service';
+import { MultiWindowConfig } from './multi-window.config';
+import { WindowData, AppWindow, KnownAppWindow } from './window.type';
+import { Message, MessageType, MessageTemplate } from './message.type';
 
 @Injectable()
 export class MultiWindowService {
 
     private myWindow: WindowData;
 
-    private heartbeatId: number = -1;
-    private windowScanId: number = -1;
+    private heartbeatId = -1;
+    private windowScanId = -1;
 
     private knownWindows: KnownAppWindow[] = [];
 
@@ -127,6 +127,13 @@ export class MultiWindowService {
         return this.knownWindows;
     }
 
+    /**
+     * Start so that the current instance of the angular app/service/tab participates in the cross window communication.
+     * It starts the interval-based checking for messages and updating the heartbeat.
+     *
+     * Note: There should be no need to call this method in production apps. It will automatically be called internally
+     * during service construction (see {@link MultiWindowService} constructor)
+     */
     public start(): void {
         if (this.heartbeatId === -1) {
             this.heartbeatId = setInterval(this.heartbeat, MultiWindowConfig.heartbeat);
@@ -136,6 +143,12 @@ export class MultiWindowService {
         }
     }
 
+    /**
+     * Stop the current instance of the angular app/service/tab from participating in the cross window communication.
+     * It stops the interval-based checking for messages and updating the heartbeat.
+     *
+     * Note: There should be no need to call this method in production apps.
+     */
     public stop(): void {
         if (this.heartbeatId >= 0) {
             clearInterval(this.heartbeatId);
@@ -301,13 +314,13 @@ export class MultiWindowService {
                 // Ignore messages from myself (not done using Array.filter to reduce array iterations)
                 // but check for proper last heartbeat time
                 if (this.myWindow.heartbeat !== -1 && this.myWindow.heartbeat !== window.heartbeat) {
-                    console.log('Window ' + this.myWindow.id + '  detected that there is probably another instance with' +
+                    console.warn('Window ' + this.myWindow.id + '  detected that there is probably another instance with' +
                         ' this id)');
                     // The heartbeat value in the localstorage is a different one than the one we wrote into localstorage
                     // during our last heartbeat. There are probably two app windows
                     // using the same window id => change the current windows id
                     this.myWindow.id = MultiWindowService.generateId();
-                    console.log('Window ' + window.id + ' changed id to ' + this.myWindow.id);
+                    console.info('Window ' + window.id + ' changed id to ' + this.myWindow.id);
                     this.storageService.setWindowName(MultiWindowService.generateWindowKey(this.myWindow.id));
                 }
                 return;
@@ -403,7 +416,7 @@ export class MultiWindowService {
             }
         });
 
-        console.log('Writing local object for window ' + this.myWindow.id);
+        // console.log('Writing local object for window ' + this.myWindow.id);
         this.storageService.setLocalObject(MultiWindowService.generateWindowKey(this.myWindow.id), {
             heartbeat: now,
             id: this.myWindow.id,
@@ -437,3 +450,15 @@ export class MultiWindowService {
         this.windowSubject.next(this.knownWindows);
     }
 }
+
+/* singleton pattern taken from https://github.com/angular/angular/issues/13854 */
+export function MultiWindowServiceProviderFactory(parentDispatcher: MultiWindowService,
+                                                  location: Location, storageService: StorageService) {
+    return parentDispatcher || new MultiWindowService(location, storageService);
+}
+
+export const MultiWindowServiceProvider = {
+    provide: MultiWindowService,
+    deps: [[new Optional(), new SkipSelf(), MultiWindowService], [new Optional(), Location], [StorageService]],
+    useFactory: MultiWindowServiceProviderFactory
+};

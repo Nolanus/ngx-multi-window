@@ -1,6 +1,6 @@
 {
   "name": "ngx-multi-window",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cross-window communication for multi-window angular applications",
   "scripts": {
     "compile": "npm run lint:code && ngc -p tsconfig-build.json",

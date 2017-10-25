@@ -314,13 +314,13 @@ export class MultiWindowService {
                 // Ignore messages from myself (not done using Array.filter to reduce array iterations)
                 // but check for proper last heartbeat time
                 if (this.myWindow.heartbeat !== -1 && this.myWindow.heartbeat !== window.heartbeat) {
-                    console.warn('Window ' + this.myWindow.id + '  detected that there is probably another instance with' +
-                        ' this id)');
                     // The heartbeat value in the localstorage is a different one than the one we wrote into localstorage
                     // during our last heartbeat. There are probably two app windows
                     // using the same window id => change the current windows id
                     this.myWindow.id = MultiWindowService.generateId();
-                    console.info('Window ' + window.id + ' changed id to ' + this.myWindow.id);
+                    // tslint:disable-next-line:no-console
+                    console.warn('Window ' + window.id + '  detected that there is probably another instance with' +
+                        ' this id, changed id to ' + this.myWindow.id);
                     this.storageService.setWindowName(MultiWindowService.generateWindowKey(this.myWindow.id));
                 }
                 return;

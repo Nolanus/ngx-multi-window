@@ -48,7 +48,7 @@ export class AppComponent {
   }
 
   public newWindow() {
-    let newWindowData = this.multiWindowService.newWindow();
+    const newWindowData = this.multiWindowService.newWindow();
     newWindowData.created.subscribe(() => {
       },
       (err) => {

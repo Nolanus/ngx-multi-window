@@ -207,14 +207,14 @@ export class MultiWindowService {
      * urlString: This string must be included in the url the new window loads.
      * It does not matter whether it is in the path, query or hash part
      *
-     * created: An observable that will fire once new window was opened and was able
+     * created: An observable that will complete after new window was opened and was able
      * to receive a message. If the window does not start consuming messages within
      * {@link MultiWindowConfig#messageTimeout}, this observable will fail, although
-     * the window might become present after that.
+     * the window might become present after that. The Observable will never emit any elements.
      *
-     * @returns {{windowId: string, urlString: string, created: Observable<R>}}
+     * @returns {{windowId: string, urlString: string, created: Observable<string>}}
      */
-    public newWindow(): {windowId: string, urlString: string, created: Observable<undefined>} {
+    public newWindow(): {windowId: string, urlString: string, created: Observable<string>} {
         if (this.location === null) {
             // Reading information from the URL is only possible with the Location provider. If
             // this window does not have one, another one will have none as well and thus would

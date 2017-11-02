@@ -65,7 +65,7 @@
     "@angular/platform-browser": "^4.1.0",
     "@angular/router": "^4.1.0",
     "@types/core-js": "^0.9.41",
-    "codelyzer": "^3.0.1",
+    "codelyzer": "^4.0.0",
     "rimraf": "^2.5.4",
     "rollup": "^0.50.0",
     "rollup-plugin-uglify": "^2.0.1",

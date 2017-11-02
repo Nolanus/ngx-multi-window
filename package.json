@@ -63,7 +63,7 @@
     "@angular/compiler-cli": "^4.1.0",
     "@angular/core": "^4.1.0",
     "@angular/platform-browser": "^4.1.0",
-    "@angular/router": "^4.1.0",
+    "@angular/router": "^5.0.0",
     "@types/core-js": "^0.9.41",
     "codelyzer": "^3.0.1",
     "rimraf": "^2.5.4",

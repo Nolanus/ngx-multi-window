@@ -11,13 +11,17 @@ export default {
         '@angular/router',
         '@angular/platform-browser',
         '@angular/common',
-        'rxjs'
+        'rxjs/Subject',
+        'rxjs/BehaviorSubject',
+        'rxjs/operators'
     ],
     globals: {
         '@angular/core': 'ng.core',
         '@angular/platform-browser': 'ng.platform-browser',
         '@angular/common': 'ng.common',
-        'rxjs': 'rxjs'
+        'rxjs/Subject': 'Subject',
+        'rxjs/BehaviorSubject': 'BehaviorSubject',
+        'rxjs/operators': 'Operators'
     },
     name: 'ngx.multi.window',
     plugins: [

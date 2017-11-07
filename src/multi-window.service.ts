@@ -1,6 +1,9 @@
 import { Injectable, Optional, SkipSelf } from '@angular/core';
 import { Location } from '@angular/common';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { ignoreElements } from 'rxjs/operators';
 
 import { StorageService } from './storage.service';
 import { MultiWindowConfig } from './multi-window.config';
@@ -236,7 +239,7 @@ export class MultiWindowService {
         return {
             windowId: newWindowId,
             urlString: MultiWindowService.generateWindowKey(newWindowId),
-            created: this.messageTracker[messageId].ignoreElements()
+            created: this.messageTracker[messageId].pipe(ignoreElements())
         };
     }
 

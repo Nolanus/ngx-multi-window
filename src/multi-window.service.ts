@@ -24,13 +24,13 @@ export class MultiWindowService {
      * A hash that keeps track of subjects for all send messages
      * @type {{}}
      */
-    private messageTracker: {[key: string]: Subject<string>} = {};
+    private messageTracker: { [key: string]: Subject<string> } = {};
 
     /**
      * A copy of the outbox that is regularly written to the local storage
      * @type {{}}
      */
-    private outboxCache: {[key: string]: Message} = {};
+    private outboxCache: { [key: string]: Message } = {};
 
     /**
      * A subject to subscribe to in order to get notified about messages send to this window
@@ -61,15 +61,15 @@ export class MultiWindowService {
     }
 
     constructor(@Optional() private location: Location, private storageService: StorageService) {
-        let windowName = undefined;
+        let windowName;
         if (location) {
             // Try to extract the new window name from the location path
-            let nameRegex = new RegExp(
+            const nameRegex = new RegExp(
                 // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
                 MultiWindowConfig.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
                 + 'w_([a-z0-9]+)'
             );
-            let match = location.path(true).match(nameRegex);
+            const match = location.path(true).match(nameRegex);
             if (match !== null) {
                 windowName = match[1];
             }
@@ -183,8 +183,8 @@ export class MultiWindowService {
      * @returns {Observable<string>} An observable that emits the messageId once the message has been put into
      * the current windows outbox. It completes on successful delivery and fails if the delivery times out.
      */
-    public sendMessage(recipientId: string, event: string, data: any, payload: any = undefined): Observable<string> {
-        let messageId = this.pushToOutbox({
+    public sendMessage(recipientId: string, event: string, data: any, payload?: any): Observable<string> {
+        const messageId = this.pushToOutbox({
             recipientId,
             type: MessageType.MESSAGE,
             event,
@@ -217,16 +217,16 @@ export class MultiWindowService {
      *
      * @returns {{windowId: string, urlString: string, created: Observable<string>}}
      */
-    public newWindow(): {windowId: string, urlString: string, created: Observable<string>} {
+    public newWindow(): { windowId: string, urlString: string, created: Observable<string> } {
         if (this.location === null) {
             // Reading information from the URL is only possible with the Location provider. If
             // this window does not have one, another one will have none as well and thus would
             // not be able to read its new windowId from the url path
             throw new Error('No Location Provider present');
         }
-        let newWindowId = MultiWindowService.generateId();
+        const newWindowId = MultiWindowService.generateId();
 
-        let messageId = this.pushToOutbox({
+        const messageId = this.pushToOutbox({
             recipientId: newWindowId,
             type: MessageType.PING,
             event: undefined,
@@ -244,7 +244,7 @@ export class MultiWindowService {
     }
 
     private init(windowId?: string): void {
-        let windowKey = windowId
+        const windowKey = windowId
             ? MultiWindowService.generateWindowKey(windowId)
             : this.storageService.getWindowName();
         let windowData: WindowData | null = null;
@@ -260,7 +260,7 @@ export class MultiWindowService {
                 heartbeat: windowData.heartbeat
             };
         } else {
-            let myWindowId = windowId || MultiWindowService.generateId();
+            const myWindowId = windowId || MultiWindowService.generateId();
             this.myWindow = {
                 id: myWindowId,
                 name: 'AppWindow ' + myWindowId,
@@ -278,7 +278,7 @@ export class MultiWindowService {
     }
 
     private pushToOutbox({recipientId, type, event, data, payload}: MessageTemplate,
-        messageId: string = MultiWindowService.generateId()): string {
+                         messageId: string = MultiWindowService.generateId()): string {
         if (recipientId === this.id) {
             throw new Error('Cannot send messages to self');
         }
@@ -298,15 +298,15 @@ export class MultiWindowService {
     }
 
     private heartbeat = () => {
-        let now = new Date().getTime();
+        const now = new Date().getTime();
         // Check whether there are new messages for the current window in the other window's outboxes
 
         // Store the ids of all messages we receive in this iteration
-        let receivedMessages: string[] = [];
+        const receivedMessages: string[] = [];
 
         this.knownWindows.forEach(windowData => {
             // Load the window from the localstorage
-            let window = this.storageService.getLocalObject<AppWindow>(MultiWindowService.generateWindowKey(windowData.id));
+            const window = this.storageService.getLocalObject<AppWindow>(MultiWindowService.generateWindowKey(windowData.id));
 
             if (window === null) {
                 // No window found, it possibly got closed/removed since our last scanForWindow
@@ -364,7 +364,7 @@ export class MultiWindowService {
                         // confirmation in our own outbox.
 
                         if (!(this.outboxCache[message.messageId] &&
-                            this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
+                                this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
                             // We did not process that message
 
                             // Create a new message for the message sender in the current window's
@@ -379,7 +379,7 @@ export class MultiWindowService {
                             if (message.type !== MessageType.PING) {
                                 if (message.payload === true) {
                                     // The message has a separate payload
-                                    let payloadKey = MultiWindowService.generatePayloadKey(message);
+                                    const payloadKey = MultiWindowService.generatePayloadKey(message);
                                     message.payload = this.storageService.getLocalObject<any>(payloadKey);
                                     this.storageService.removeLocalItem(payloadKey);
                                 }
@@ -393,7 +393,7 @@ export class MultiWindowService {
 
         // Iterate over the outbox to clean it up, process timeouts and payloads
         Object.keys(this.outboxCache).forEach(messageId => {
-            let message = this.outboxCache[messageId];
+            const message = this.outboxCache[messageId];
             if (message.type === MessageType.MESSAGE_RECEIVED && !receivedMessages.some(msgId => msgId === messageId)) {
                 // It's a message confirmation and we did not receive the 'original' method for that confirmation
                 // => the sender has received our confirmation and removed the message from it's outbox, thus we can

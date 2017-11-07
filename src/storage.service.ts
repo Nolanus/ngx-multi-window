@@ -85,7 +85,7 @@ export class StorageService {
     }
 
     private getObject<T>(storage: Storage, key: string): T | null {
-        let jsonString = this.getItem(storage, key);
+        const jsonString = this.getItem(storage, key);
         if (jsonString === null) {
             return null;
         }

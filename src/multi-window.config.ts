@@ -4,7 +4,7 @@ export class MultiWindowConfig {
      * String to be used as prefix when storing data in the localstorage
      * @type {string}
      */
-    public static keyPrefix = 'ng2mw_';
+    public static keyPrefix = 'ngxmw_';
 
     /**
      * Time in milliseconds how often a heartbeat should be performed. During a heartbeat a window

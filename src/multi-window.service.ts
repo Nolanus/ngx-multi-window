@@ -1,8 +1,6 @@
 import { Injectable, Optional, SkipSelf } from '@angular/core';
 import { Location } from '@angular/common';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
 
 import { StorageService } from './storage.service';
@@ -39,7 +37,7 @@ export class MultiWindowService {
     private messageSubject: Subject<Message> = new Subject<Message>();
 
     /**
-     * A subjct to subscribe to in order to get notified about all known windows
+     * A subject to subscribe to in order to get notified about all known windows
      * @type {BehaviorSubject<WindowData[]>}
      */
     private windowSubject: Subject<KnownAppWindow[]> = new BehaviorSubject<KnownAppWindow[]>(this.knownWindows);

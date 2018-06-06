@@ -3,17 +3,19 @@
   "version": "0.1.2",
   "description": "Cross-window communication for multi-window angular applications",
   "scripts": {
-    "compile": "npm run lint:code && ngc -p tsconfig-build.json",
-    "compile:tsc": "npm run lint && tsc -p tsconfig.json --noUnusedLocals",
+    "compile": "npm run lint:code && ngc -p tsconfig-build.json --pretty",
+    "compile:tsc": "npm run lint && tsc -p tsconfig.json --noUnusedLocals --pretty",
     "bundle:create": "npm run bundle:clean && npm run rollup && npm run rollup:min",
     "bundle:clean": "rimraf bundles",
-    "demo": "npm install && npm run demo:clean && npm run demo:start",
+    "demo": "npm install && npm run demo:install && npm run demo:prepare && npm run demo:start",
+    "demo:install": "cd demo/ && npm install",
     "demo:clean": "cd demo/ && npm uninstall ngx-multi-window && npm install",
+    "demo:prepare": "rm -rf demo/node_modules/ngx-multi-window && ngc -p tsconfig-build.json --pretty --outDir demo/node_modules/ngx-multi-window && cp package.json demo/node_modules/ngx-multi-window/package.json",
     "demo:start": "cd demo/ && npm start",
     "lint": "npm run lint:code && npm run lint:test",
     "lint:code": "tslint ./src/**/*.ts -t verbose --exclude ./src/**/*.d.ts",
     "lint:test": "tslint ./test/**/*.ts -t verbose --exclude ./test/**/*.d.ts",
-    "prepublish": "npm run compile && npm run bundle:create",
+    "prepare": "npm run compile && npm run bundle:create",
     "pretest": "npm run compile:tsc",
     "rollup": "rollup -c rollup.conf.js",
     "rollup:min": "rollup -c rollup-uglify.conf.js",
@@ -50,28 +52,28 @@
   },
   "homepage": "https://github.com/Nolanus/ngx-multi-window#readme",
   "dependencies": {
-    "rxjs": "^5.5.2"
+    "rxjs": "^6.2.0"
   },
   "peerDependencies": {
-    "@angular/core": ">=4.1.0 <6.0.0",
-    "@angular/common": ">=4.1.0 <6.0.0",
-    "@angular/platform-browser": ">=4.1.0 <6.0.0"
+    "@angular/core": ">=6.0.0 <7.0.0",
+    "@angular/common": ">=6.0.0 <7.0.0",
+    "@angular/platform-browser": ">=6.0.0 <7.0.0"
   },
   "devDependencies": {
-    "@angular/common": "^5.0.0",
-    "@angular/compiler": "^5.0.0",
-    "@angular/compiler-cli": "^5.0.0",
-    "@angular/core": "^5.0.0",
-    "@angular/platform-browser": "^5.0.0",
-    "@angular/platform-browser-dynamic": "^5.0.0",
-    "@angular/router": "^5.0.0",
-    "@types/core-js": "^0.9.41",
-    "codelyzer": "^4.0.1",
+    "@angular/common": "^6.0.3",
+    "@angular/compiler": "^6.0.3",
+    "@angular/compiler-cli": "^6.0.3",
+    "@angular/core": "^6.0.3",
+    "@angular/platform-browser": "^6.0.3",
+    "@angular/platform-browser-dynamic": "^6.0.3",
+    "@angular/router": "^6.0.3",
+    "@types/core-js": "^2.5.0",
+    "codelyzer": "^4.3.0",
     "rimraf": "^2.5.4",
-    "rollup": "^0.50.0",
-    "rollup-plugin-uglify": "^2.0.1",
-    "tslint": "^5.1.0",
-    "typescript": "~2.4.2",
-    "zone.js": "^0.8.9"
+    "rollup": "^0.60.0",
+    "rollup-plugin-uglify": "^3.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "~2.7.2",
+    "zone.js": "^0.8.26"
   }
 }

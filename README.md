@@ -24,15 +24,15 @@ First you need to install the npm module:
 npm install ngx-multi-window --save
 ```
 
-Then add the `NgxMultiWindowModule` to the imports array of your application module:
+Then add the `MultiWindowModule` to the imports array of your application module:
 
 ```typescript
-import {NgxMultiWindowModule} from 'ngx-multi-window';
+import {MultiWindowModule} from 'ngx-multi-window';
 
 @NgModule({
     imports: [
         /* Other imports here */
-        NgXMultiWindowModule
+        MultiWindowModule
         ]
 })
 export class AppModule {

@@ -1,4 +1,4 @@
-import {Message} from './message.type';
+import { Message } from './message.type';
 
 export interface WindowData {
     heartbeat: number;

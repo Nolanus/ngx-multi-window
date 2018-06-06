@@ -1,4 +1,4 @@
-import {Injectable, Optional, SkipSelf} from '@angular/core';
+import { Injectable, Optional, SkipSelf } from '@angular/core';
 
 @Injectable()
 export class StorageService {

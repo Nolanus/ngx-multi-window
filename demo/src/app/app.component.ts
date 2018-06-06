@@ -1,14 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MultiWindowService, WindowData, Message } from 'ngx-multi-window';
+import { NameGeneratorService } from "./name-generator.service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  title = 'app works!';
-
+export class AppComponent implements OnInit {
   ownName: string;
   ownId: string;
 
@@ -17,20 +16,33 @@ export class AppComponent {
 
   newName: string;
 
-  constructor(private multiWindowService: MultiWindowService) {
-    this.ownId = multiWindowService.id;
-    this.ownName = multiWindowService.name;
-    this.newName = this.ownName;
-    this.windows = multiWindowService.getKnownWindows();
+  constructor(private multiWindowService: MultiWindowService, private nameGenerator: NameGeneratorService) {
+  }
 
-    multiWindowService.onMessage().subscribe((value: Message) => {
+  ngOnInit(): void {
+    this.ownId = this.multiWindowService.id;
+    this.ownName = this.multiWindowService.name;
+    if (this.ownName.indexOf(this.ownId) >= 0) {
+      // This window still has the automatic given name, so generate a fake one for demo reasons
+      // Generate a random name for the current window, just for fun
+      this.multiWindowService.name = this.ownName = this.nameGenerator.getRandomFakeName();
+    }
+    this.newName = this.ownName;
+    this.windows = this.multiWindowService.getKnownWindows();
+
+    this.multiWindowService.onMessage().subscribe((value: Message) => {
       this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
     });
 
-    multiWindowService.onWindows().subscribe(knownWindows => this.windows = knownWindows);
+    this.multiWindowService.onWindows().subscribe(knownWindows => this.windows = knownWindows);
   }
 
   public sendMessage(recipientId: string, message: string) {
+    if (recipientId === this.ownId) {
+      // Catch sending messages to itself. Trying to do so throws an error from multiWindowService.sendMessage()
+      this.logs.unshift('Can\'t send messages to itself. Select another window.');
+      return;
+    }
     this.multiWindowService.sendMessage(recipientId, 'customEvent', message).subscribe(
       (messageId: string) => {
         this.logs.unshift('Message send, ID is ' + messageId);
@@ -43,8 +55,12 @@ export class AppComponent {
       });
   }
 
+  public removeLogMessage(index: number) {
+    this.logs.splice(index, 1);
+  }
+
   public changeName() {
-    this.multiWindowService.name = this.newName;
+    this.multiWindowService.name = this.ownName = this.newName;
   }
 
   public newWindow() {
@@ -59,5 +75,9 @@ export class AppComponent {
       }
     );
     window.open('?' + newWindowData.urlString);
+  }
+
+  public windowTrackerFunc(item, index) {
+    return item.id;
   }
 }

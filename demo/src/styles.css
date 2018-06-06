@@ -30,8 +30,13 @@ body {
   overflow-y: scroll;
 }
 
+.list-group-item-action {
+  cursor: pointer;
+}
+
 /* Custom page footer */
 .footer {
+  margin-top: 1.5rem;
   padding-top: 1.5rem;
   color: #777;
   border-top: .05rem solid #e5e5e5;

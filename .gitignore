@@ -133,5 +133,5 @@ src/*.js
 bundles/*.js
 /test/e2e/*.js
 /test/*.js
-/ssh
-/ssh.pub
+/deploy_key
+/deploy_key.pub

@@ -70,7 +70,7 @@
     "@types/core-js": "^2.5.0",
     "codelyzer": "^4.3.0",
     "rimraf": "^2.5.4",
-    "rollup": "^0.60.0",
+    "rollup": "^0.61.0",
     "rollup-plugin-uglify": "^3.0.0",
     "tslint": "^5.10.0",
     "typescript": "~2.7.2",

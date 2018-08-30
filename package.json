@@ -71,7 +71,7 @@
     "codelyzer": "^4.3.0",
     "rimraf": "^2.5.4",
     "rollup": "^0.60.0",
-    "rollup-plugin-uglify": "^3.0.0",
+    "rollup-plugin-uglify": "^5.0.0",
     "tslint": "^5.10.0",
     "typescript": "~2.7.2",
     "zone.js": "^0.8.26"

@@ -18,10 +18,10 @@
     ],
     "paths": {
       "ngx-multi-window": [
-        "dist/ngx-multi-window"
+        "projects/ngx-multi-window/src"
       ],
       "ngx-multi-window/*": [
-        "dist/ngx-multi-window/*"
+        "projects/ngx-multi-window/src/*"
       ]
     }
   }

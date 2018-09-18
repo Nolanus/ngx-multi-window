@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MultiWindowService, WindowData, Message } from 'ngx-multi-window';
-import { NameGeneratorService } from './name-generator.service';
+import { NameGeneratorService } from './providers/name-generator.service';
 
 @Component({
   selector: 'app-root',

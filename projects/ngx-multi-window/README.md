@@ -183,21 +183,15 @@ Sending message from sender A to recipient B involves the following steps:
 
 ## Example App
 
-The [_demo_](demo) subfolder contains a project created with angular-cli
-that has been adapted to showcase the functionality of ngx-multi-window. Run the 
-demo app by checking out that repository and execute the 
-following command in the project root directory:
+This project contains a demo application that has been 
+adapted to showcase the functionality of ngx-multi-window. 
+Run the demo app by checking out that repository and execute 
+the following command in the project root directory:
 
  ```
- npm run demo
+npm install
+npm run start
  ```
-  
-This will perform the following steps:
-
-* Install the dependencies of the ngx-page-scroll project
-* Install the dependencies of the demo-app project
-* Replace the ngx-page-scroll library in the demo-app with a fresh build
-* Run the demo server (`ng serve`)
  
 ## TODO
 

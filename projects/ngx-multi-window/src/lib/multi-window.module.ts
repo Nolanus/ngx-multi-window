@@ -1,12 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import {ModuleWithProviders, NgModule} from '@angular/core';
 
-import { MultiWindowServiceProvider } from './providers/multi-window.service';
-import { StorageServiceProvider } from './providers/storage.service';
+import {MultiWindowService} from './providers/multi-window.service';
+import {StorageService} from './providers/storage.service';
+import {MultiWindowConfig} from 'ngx-multi-window';
 
 @NgModule({
     imports: [CommonModule],
-    providers: [StorageServiceProvider, MultiWindowServiceProvider]
+    providers: [StorageService, MultiWindowService]
 })
 export class MultiWindowModule {
+  static forRoot(config: MultiWindowConfig = null): ModuleWithProviders {
+    return {
+      ngModule: MultiWindowModule,
+      providers: [MultiWindowService, {provide: 'config', useValue: config}]
+    };
+  }
 }

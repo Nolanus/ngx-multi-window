@@ -4,7 +4,10 @@ import { Location, LocationStrategy, PathLocationStrategy } from '@angular/commo
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { MultiWindowModule } from 'ngx-multi-window';
+import {MultiWindowConfig, MultiWindowModule} from 'ngx-multi-window';
+
+const config: MultiWindowConfig = new MultiWindowConfig();
+config.heartbeat = 500;
 
 @NgModule({
   declarations: [
@@ -13,7 +16,7 @@ import { MultiWindowModule } from 'ngx-multi-window';
   imports: [
     BrowserModule,
     FormsModule,
-    MultiWindowModule
+    MultiWindowModule.forRoot(config)
   ],
   providers: [Location, {provide: LocationStrategy, useClass: PathLocationStrategy}],
   bootstrap: [AppComponent]

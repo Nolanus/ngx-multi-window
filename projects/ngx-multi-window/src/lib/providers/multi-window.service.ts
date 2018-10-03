@@ -423,7 +423,7 @@ export class MultiWindowService {
 
         // Store the new heartbeat value in the local windowData copy
         this.myWindow.heartbeat = now;
-    };
+    }
 
     private scanForWindows = () => {
         this.knownWindows =

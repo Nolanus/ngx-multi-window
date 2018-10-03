@@ -26,7 +26,7 @@ install:
 
 script:
   # Execute the tests
- - npm test
+ - npm run test:ci
 
 #after_success:
 #  - ./deploy.sh

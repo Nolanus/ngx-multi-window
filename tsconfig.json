@@ -1,32 +1,28 @@
 {
-  "version": "2.0.0",
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
     "sourceMap": true,
-    "declaration": true,
-    "removeComments": false,
+    "declaration": false,
+    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "strictNullChecks": false,
-    "listFiles": false,
-    "noLib": false,
-    "lib": [
-      "es2016",
-      "dom"
-    ],
+    "target": "es5",
     "typeRoots": [
       "node_modules/@types"
     ],
-    "types": [
-      "core-js"
-    ]
-  },
-  "include": [
-    "./ngx-multi-window.ts",
-    "./test/**/*.ts"
-  ]
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "paths": {
+      "ngx-multi-window": [
+        "projects/ngx-multi-window/src"
+      ],
+      "ngx-multi-window/*": [
+        "projects/ngx-multi-window/src/*"
+      ]
+    }
+  }
 }

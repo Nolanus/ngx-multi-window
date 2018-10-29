@@ -59,7 +59,7 @@ export class MultiWindowService {
     }
 
     constructor(
-      @Inject('config') config: MultiWindowConfig,
+      @Inject('ngxmw_config') config: MultiWindowConfig,
       @Optional() private location: Location,
       private storageService: StorageService
     ) {

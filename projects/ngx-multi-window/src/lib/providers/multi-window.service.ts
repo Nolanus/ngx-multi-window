@@ -1,4 +1,4 @@
-import { Injectable, Optional, SkipSelf } from '@angular/core';
+import {Inject, Injectable, Optional} from '@angular/core';
 import { Location } from '@angular/common';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
@@ -8,13 +8,16 @@ import { MultiWindowConfig } from '../types/multi-window.config';
 import { WindowData, AppWindow, KnownAppWindow } from '../types/window.type';
 import { Message, MessageType, MessageTemplate } from '../types/message.type';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class MultiWindowService {
+    private static config = new MultiWindowConfig();
 
     private myWindow: WindowData;
 
-    private heartbeatId = -1;
-    private windowScanId = -1;
+    private heartbeatId = null;
+    private windowScanId = null;
 
     private knownWindows: KnownAppWindow[] = [];
 
@@ -43,24 +46,32 @@ export class MultiWindowService {
     }
 
     private static generatePayloadKey({messageId}: Message): string {
-        return MultiWindowConfig.keyPrefix + 'payload_' + messageId;
+        return MultiWindowService.config.keyPrefix + 'payload_' + messageId;
     }
 
     private static generateWindowKey(windowId: string): string {
-        return MultiWindowConfig.keyPrefix + 'w_' + windowId;
+        return MultiWindowService.config.keyPrefix + 'w_' + windowId;
     }
 
     private static isWindowKey(key: string): boolean {
-        return key.indexOf(MultiWindowConfig.keyPrefix + 'w_') === 0;
+        return key.indexOf(MultiWindowService.config.keyPrefix + 'w_') === 0;
     }
 
-    constructor(@Optional() private location: Location, private storageService: StorageService) {
+    constructor(
+      @Inject('config') config: MultiWindowConfig,
+      @Optional() private location: Location,
+      private storageService: StorageService
+    ) {
+        if (config) {
+          MultiWindowService.config = config;
+        }
+
         let windowName;
         if (location) {
             // Try to extract the new window name from the location path
             const nameRegex = new RegExp(
                 // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
-                MultiWindowConfig.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+              MultiWindowService.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
                 + 'w_([a-z0-9]+)'
             );
             const match = location.path(true).match(nameRegex);
@@ -128,11 +139,11 @@ export class MultiWindowService {
      * during service construction (see {@link MultiWindowService} constructor)
      */
     public start(): void {
-        if (this.heartbeatId === -1) {
-            this.heartbeatId = setInterval(this.heartbeat, MultiWindowConfig.heartbeat);
+        if (!this.heartbeatId) {
+            this.heartbeatId = setInterval(this.heartbeat, MultiWindowService.config.heartbeat);
         }
-        if (this.windowScanId === -1) {
-            this.windowScanId = setInterval(this.scanForWindows, MultiWindowConfig.newWindowScan);
+        if (!this.windowScanId) {
+            this.windowScanId = setInterval(this.scanForWindows, MultiWindowService.config.newWindowScan);
         }
     }
 
@@ -143,13 +154,13 @@ export class MultiWindowService {
      * Note: There should be no need to call this method in production apps.
      */
     public stop(): void {
-        if (this.heartbeatId >= 0) {
+        if (this.heartbeatId) {
             clearInterval(this.heartbeatId);
-            this.heartbeatId = -1;
+            this.heartbeatId = null;
         }
-        if (this.windowScanId >= 0) {
+        if (this.windowScanId) {
             clearInterval(this.windowScanId);
-            this.windowScanId = -1;
+            this.windowScanId = null;
         }
     }
 
@@ -317,7 +328,7 @@ export class MultiWindowService {
                 return;
             }
 
-            if (now - window.heartbeat > MultiWindowConfig.windowTimeout) {
+            if (now - window.heartbeat > MultiWindowService.config.windowTimeout) {
                 // The window seems to be dead, remove the entry from the localstorage
                 this.storageService.removeLocalItem(MultiWindowService.generateWindowKey(window.id));
             }
@@ -387,7 +398,7 @@ export class MultiWindowService {
                 // => the sender has received our confirmation and removed the message from it's outbox, thus we can
                 //     safely remove the message confirmation as well
                 delete this.outboxCache[messageId];
-            } else if (message.type !== MessageType.MESSAGE_RECEIVED && now - message.sendTime > MultiWindowConfig.messageTimeout) {
+            } else if (message.type !== MessageType.MESSAGE_RECEIVED && now - message.sendTime > MultiWindowService.config.messageTimeout) {
                 // Delivering the message has failed, as the target window did not pick it up in time
                 // The type of message doesn't matter for that
                 delete this.outboxCache[messageId];
@@ -434,22 +445,10 @@ export class MultiWindowService {
                     id,
                     name,
                     heartbeat,
-                    stalled: new Date().getTime() - heartbeat > MultiWindowConfig.heartbeat * 2,
+                    stalled: new Date().getTime() - heartbeat > MultiWindowService.config.heartbeat * 2,
                     self: this.myWindow.id === id
                 };
             });
         this.windowSubject.next(this.knownWindows);
     }
 }
-
-/* singleton pattern taken from https://github.com/angular/angular/issues/13854 */
-export function MultiWindowServiceProviderFactory(parentDispatcher: MultiWindowService,
-                                                  location: Location, storageService: StorageService) {
-    return parentDispatcher || new MultiWindowService(location, storageService);
-}
-
-export const MultiWindowServiceProvider = {
-    provide: MultiWindowService,
-    deps: [[new Optional(), new SkipSelf(), MultiWindowService], [new Optional(), Location], [StorageService]],
-    useFactory: MultiWindowServiceProviderFactory
-};

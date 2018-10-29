@@ -1,6 +1,8 @@
 import { Injectable, Optional, SkipSelf } from '@angular/core';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class StorageService {
 
     private window: Window;
@@ -16,7 +18,6 @@ export class StorageService {
     /*
      Write methods
      */
-
     public setLocalObject(key: string, obj: any): boolean {
         return this.setObject(this.localStorage, key, obj);
     }

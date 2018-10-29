@@ -12,7 +12,7 @@ import { Message, MessageType, MessageTemplate } from '../types/message.type';
   providedIn: 'root',
 })
 export class MultiWindowService {
-    private static config = new MultiWindowConfig();
+    private static config;
 
     private myWindow: WindowData;
 

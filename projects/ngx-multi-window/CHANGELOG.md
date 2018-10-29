@@ -1,3 +1,8 @@
+## 0.2.0 (2018-10-29)
+
+- Change build system to use angular cli library feature (special thanks to [Kay van Bree](https://github.com/kayvanbree))
+- Change configuration to use `forRoot` method
+
 ## 0.1.3 (2018-06-06)
 
 ### Breaking Change

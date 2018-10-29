@@ -12,7 +12,8 @@ import { Message, MessageType, MessageTemplate } from '../types/message.type';
   providedIn: 'root',
 })
 export class MultiWindowService {
-    private static config;
+
+    private config: MultiWindowConfig;
 
     private myWindow: WindowData;
 
@@ -45,16 +46,16 @@ export class MultiWindowService {
         return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
     }
 
-    private static generatePayloadKey({messageId}: Message): string {
-        return MultiWindowService.config.keyPrefix + 'payload_' + messageId;
+    private generatePayloadKey({messageId}: Message): string {
+        return this.config.keyPrefix + 'payload_' + messageId;
     }
 
-    private static generateWindowKey(windowId: string): string {
-        return MultiWindowService.config.keyPrefix + 'w_' + windowId;
+    private generateWindowKey(windowId: string): string {
+        return this.config.keyPrefix + 'w_' + windowId;
     }
 
-    private static isWindowKey(key: string): boolean {
-        return key.indexOf(MultiWindowService.config.keyPrefix + 'w_') === 0;
+    private isWindowKey(key: string): boolean {
+        return key.indexOf(this.config.keyPrefix + 'w_') === 0;
     }
 
     constructor(
@@ -63,7 +64,7 @@ export class MultiWindowService {
       private storageService: StorageService
     ) {
         if (config) {
-          MultiWindowService.config = config;
+          this.config = config;
         }
 
         let windowName;
@@ -71,7 +72,7 @@ export class MultiWindowService {
             // Try to extract the new window name from the location path
             const nameRegex = new RegExp(
                 // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
-              MultiWindowService.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+              this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
                 + 'w_([a-z0-9]+)'
             );
             const match = location.path(true).match(nameRegex);
@@ -140,10 +141,10 @@ export class MultiWindowService {
      */
     public start(): void {
         if (!this.heartbeatId) {
-            this.heartbeatId = setInterval(this.heartbeat, MultiWindowService.config.heartbeat);
+            this.heartbeatId = setInterval(this.heartbeat, this.config.heartbeat);
         }
         if (!this.windowScanId) {
-            this.windowScanId = setInterval(this.scanForWindows, MultiWindowService.config.newWindowScan);
+            this.windowScanId = setInterval(this.scanForWindows, this.config.newWindowScan);
         }
     }
 
@@ -171,7 +172,7 @@ export class MultiWindowService {
      * recreated after {@link MultiWindowConfig#heartbeat} milliseconds
      */
     public clear(): void {
-        this.storageService.removeLocalItem(MultiWindowService.generateWindowKey(this.myWindow.id));
+        this.storageService.removeLocalItem(this.generateWindowKey(this.myWindow.id));
     }
 
     /**
@@ -237,17 +238,17 @@ export class MultiWindowService {
 
         return {
             windowId: newWindowId,
-            urlString: MultiWindowService.generateWindowKey(newWindowId),
+            urlString: this.generateWindowKey(newWindowId),
             created: this.messageTracker[messageId].pipe(ignoreElements())
         };
     }
 
     private init(windowId?: string): void {
         const windowKey = windowId
-            ? MultiWindowService.generateWindowKey(windowId)
+            ? this.generateWindowKey(windowId)
             : this.storageService.getWindowName();
         let windowData: WindowData | null = null;
-        if (windowKey && MultiWindowService.isWindowKey(windowKey)) {
+        if (windowKey && this.isWindowKey(windowKey)) {
             windowData = this.storageService.getLocalObject<WindowData>(windowKey);
         }
 
@@ -305,7 +306,7 @@ export class MultiWindowService {
 
         this.knownWindows.forEach(windowData => {
             // Load the window from the localstorage
-            const window = this.storageService.getLocalObject<AppWindow>(MultiWindowService.generateWindowKey(windowData.id));
+            const window = this.storageService.getLocalObject<AppWindow>(this.generateWindowKey(windowData.id));
 
             if (window === null) {
                 // No window found, it possibly got closed/removed since our last scanForWindow
@@ -323,14 +324,14 @@ export class MultiWindowService {
                     // tslint:disable-next-line:no-console
                     console.warn('Window ' + window.id + '  detected that there is probably another instance with' +
                         ' this id, changed id to ' + this.myWindow.id);
-                    this.storageService.setWindowName(MultiWindowService.generateWindowKey(this.myWindow.id));
+                    this.storageService.setWindowName(this.generateWindowKey(this.myWindow.id));
                 }
                 return;
             }
 
-            if (now - window.heartbeat > MultiWindowService.config.windowTimeout) {
+            if (now - window.heartbeat > this.config.windowTimeout) {
                 // The window seems to be dead, remove the entry from the localstorage
-                this.storageService.removeLocalItem(MultiWindowService.generateWindowKey(window.id));
+                this.storageService.removeLocalItem(this.generateWindowKey(window.id));
             }
 
             // Update the windows name and heartbeat value in the list of known windows (that's what we iterate over)
@@ -378,7 +379,7 @@ export class MultiWindowService {
                             if (message.type !== MessageType.PING) {
                                 if (message.payload === true) {
                                     // The message has a separate payload
-                                    const payloadKey = MultiWindowService.generatePayloadKey(message);
+                                    const payloadKey = this.generatePayloadKey(message);
                                     message.payload = this.storageService.getLocalObject<any>(payloadKey);
                                     this.storageService.removeLocalItem(payloadKey);
                                 }
@@ -398,7 +399,7 @@ export class MultiWindowService {
                 // => the sender has received our confirmation and removed the message from it's outbox, thus we can
                 //     safely remove the message confirmation as well
                 delete this.outboxCache[messageId];
-            } else if (message.type !== MessageType.MESSAGE_RECEIVED && now - message.sendTime > MultiWindowService.config.messageTimeout) {
+            } else if (message.type !== MessageType.MESSAGE_RECEIVED && now - message.sendTime > this.config.messageTimeout) {
                 // Delivering the message has failed, as the target window did not pick it up in time
                 // The type of message doesn't matter for that
                 delete this.outboxCache[messageId];
@@ -409,7 +410,7 @@ export class MultiWindowService {
             } else if (message.type === MessageType.MESSAGE && message.send === false) {
                 if (message.payload !== undefined && message.payload !== true) {
                     // Message has a payload that has not been moved yet, so move that in a separate localstorage key
-                    this.storageService.setLocalObject(MultiWindowService.generatePayloadKey(message), message.payload);
+                    this.storageService.setLocalObject(this.generatePayloadKey(message), message.payload);
                     message.payload = true;
                 }
                 this.messageTracker[message.messageId].next(message.messageId);
@@ -419,7 +420,7 @@ export class MultiWindowService {
         });
 
         // console.log('Writing local object for window ' + this.myWindow.id);
-        this.storageService.setLocalObject(MultiWindowService.generateWindowKey(this.myWindow.id), {
+        this.storageService.setLocalObject(this.generateWindowKey(this.myWindow.id), {
             heartbeat: now,
             id: this.myWindow.id,
             name: this.myWindow.name,
@@ -439,13 +440,13 @@ export class MultiWindowService {
     private scanForWindows = () => {
         this.knownWindows =
             this.storageService.getLocalObjects<WindowData>(
-                this.storageService.getLocalItemKeys().filter(MultiWindowService.isWindowKey)
+                this.storageService.getLocalItemKeys().filter(this.isWindowKey)
             ).map(({id, name, heartbeat}: WindowData) => {
                 return {
                     id,
                     name,
                     heartbeat,
-                    stalled: new Date().getTime() - heartbeat > MultiWindowService.config.heartbeat * 2,
+                    stalled: new Date().getTime() - heartbeat > this.config.heartbeat * 2,
                     self: this.myWindow.id === id
                 };
             });

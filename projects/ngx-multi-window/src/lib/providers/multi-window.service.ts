@@ -106,7 +106,7 @@ export class MultiWindowService {
      * @see {@link MultiWindowConfig#newWindowScan}
      * @returns
      */
-    public onWindows(): Observable<WindowData[]> {
+    public onWindows(): Observable<KnownAppWindow[]> {
         return this.windowSubject.asObservable();
     }
 

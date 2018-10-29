@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MultiWindowService, WindowData, Message } from 'ngx-multi-window';
+import { MultiWindowService, Message, KnownAppWindow } from 'ngx-multi-window';
 import { NameGeneratorService } from './providers/name-generator.service';
 
 @Component({
@@ -11,7 +11,7 @@ export class AppComponent implements OnInit {
   ownName: string;
   ownId: string;
 
-  windows: WindowData[] = [];
+  windows: KnownAppWindow[] = [];
   logs: string[] = [];
 
   newName: string;

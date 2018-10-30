@@ -87,6 +87,31 @@ export class AppComponent {
 }   
 ```
 
+### Configuration
+
+You may inject a custom `MultiWindowConfig` object when importing the `MultiWindowModule` into your application.
+
+```typescript
+@NgModule({
+    imports: [
+       ...
+       MultiWindowModule.forRoot({ heartbeat: 542 })
+     ],
+  })
+```
+
+Check the description of the [MultiWindowConfig interface](https://github.com/Nolanus/ngx-multi-window/blob/master/projects/ngx-multi-window/src/lib/types/multi-window.config.ts) properties for options.
+The [default options](https://github.com/Nolanus/ngx-multi-window/blob/master/projects/ngx-multi-window/src/lib/multi-window.module.ts#L8) are
+```typescript
+{
+  keyPrefix: 'ngxmw_',
+  heartbeat: 1000,
+  newWindowScan: 5000,
+  messageTimeout: 10000,
+  windowTimeout: 15000,
+}
+```
+
 ### Window ID and name
 
 Every window has a unique, unchangeable id which can be accessed via `multiWindowService.id`.

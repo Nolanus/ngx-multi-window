@@ -146,7 +146,11 @@ export class StorageService {
   }
 
   private getStorageItemKeys(storage: Storage): string[] {
-    return Object.keys(storage);
+    const keys = [];
+    for (let i: number = 0; i < storage.length; i++){
+      keys.push(localStorage.key(i));
+    }
+    return keys;
   }
 }
 

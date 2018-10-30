@@ -1,3 +1,7 @@
+## 0.2.2 (2018-10-30)
+
+- Fix problem with "other" windows not being detected in IE (#29, #23, be5fdc0)
+
 ## 0.2.1 (2018-10-30)
 
 - Fix problem with `this` reference in MultiWindowService

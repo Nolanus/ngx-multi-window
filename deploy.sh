@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e # Exit with nonzero exit code if anything fails
 
-SOURCE_BRANCH="master"
+SOURCE_BRANCH="deploy_test"
 TARGET_BRANCH="gh-pages"
 
 # Pull requests and commits to other branches shouldn't try to deploy, just build to verify
@@ -26,16 +26,12 @@ ls -A1 | grep -v .git | xargs rm -rf || exit 0
 cd ..
 
 # Copy over the build/compiled files from the demo app
-echo "Moving over the demo dist from $DEMO_DIST"
-cp -a $DEMO_DIST/. ghpages/
+echo "Moving over the demo dist from $1"
+cp -a $1/. ghpages/
 
 # Now let's go have some fun with the cloned repo
 echo "Go into ghpages folder"
 cd ghpages
-
-# Adjust the baseurl href property to meet the one of github pages
-echo "Adjust base href"
-sed -i -e 's/base href="\/"/base href="\/ngx-multi-window\/"/g' index.html
 
 # Configure git
 echo "Configure git"

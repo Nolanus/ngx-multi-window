@@ -1,3 +1,7 @@
+## 0.2.1 (2018-10-30)
+
+- Fix problem with `this` reference in MultiWindowService
+
 ## 0.2.0 (2018-10-29)
 
 - Change build system to use angular cli library feature (special thanks to [Kay van Bree](https://github.com/kayvanbree))

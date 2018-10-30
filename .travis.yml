@@ -14,7 +14,7 @@ env:
   - COMMIT_AUTHOR_EMAIL: "sebastian.fuss@googlemail.com"
 
 node_js:
-  - "10"
+  - "11"
 
 before_install:
 
@@ -23,13 +23,18 @@ install:
   - npm install
   # Lint the demo app
   - npm run lint
+  # Start the docker container that serves the example app
+  # - docker run --name ng2mwDemo -v $(pwd)/angular.nginx.conf:/etc/nginx/conf.d/angular.nginx.conf:ro -v $DEMO_DIST:/app:ro -d -p 127.0.0.1:8000:8000 nginx
+  # - sleep 3 # give the server a jump start
 
 script:
   # Execute the tests
  - npm run test:ci
+ # Build the demo app
+ - npm run build:app
 
-#after_success:
-#  - ./deploy.sh
+after_success:
+  - npm run deploy:app
 
 #after_script:
 #  - docker stop ng2mwDemo

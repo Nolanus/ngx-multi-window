@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build ngx-multi-window --prod && npm run copy:readme",
+    "build:app": "ng build --prod --aot --baseHref=/ngx-multi-window/",
+    "deploy:app": "./deploy.sh dist/$npm_package_name/",
     "test": "ng test ngx-multi-window",
     "test:ci": "ng test ngx-multi-window --watch=false",
     "lint": "ng lint",

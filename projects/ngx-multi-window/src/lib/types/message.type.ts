@@ -1,7 +1,7 @@
 export enum MessageType {
   MESSAGE,
   MESSAGE_RECEIVED,
-  PING
+  PING,
 }
 
 export interface MessageTemplate {

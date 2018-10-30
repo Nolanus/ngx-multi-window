@@ -10,4 +10,3 @@ export * from './lib/providers/storage.service';
 export * from './lib/types/message.type';
 export * from './lib/types/multi-window.config';
 export * from './lib/types/window.type';
-

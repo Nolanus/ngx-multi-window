@@ -58,8 +58,7 @@ export class MultiWindowService {
     return key.indexOf(this.config.keyPrefix + 'w_') === 0;
   }
 
-  constructor(@Inject('ngxmw_config') config: MultiWindowConfig,
-              @Optional() private location: Location,
+  constructor(@Inject('ngxmw_config') config: MultiWindowConfig, @Optional() private location: Location,
               private storageService: StorageService) {
     if (config) {
       this.config = config;
@@ -70,8 +69,7 @@ export class MultiWindowService {
       // Try to extract the new window name from the location path
       const nameRegex = new RegExp(
         // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
-        this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-        + 'w_([a-z0-9]+)'
+        this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + 'w_([a-z0-9]+)'
       );
       const match = location.path(true).match(nameRegex);
       if (match !== null) {
@@ -189,10 +187,10 @@ export class MultiWindowService {
       type: MessageType.MESSAGE,
       event,
       data,
-      payload
+      payload,
     });
-
     this.messageTracker[messageId] = new Subject<string>();
+
     return this.messageTracker[messageId].asObservable();
   }
 
@@ -229,7 +227,7 @@ export class MultiWindowService {
       type: MessageType.PING,
       event: undefined,
       data: undefined,
-      payload: undefined
+      payload: undefined,
     });
 
     this.messageTracker[messageId] = new Subject<string>();
@@ -237,7 +235,7 @@ export class MultiWindowService {
     return {
       windowId: newWindowId,
       urlString: this.generateWindowKey(newWindowId),
-      created: this.messageTracker[messageId].pipe(ignoreElements())
+      created: this.messageTracker[messageId].pipe(ignoreElements()),
     };
   }
 
@@ -255,14 +253,14 @@ export class MultiWindowService {
       this.myWindow = {
         id: windowData.id,
         name: windowData.name,
-        heartbeat: windowData.heartbeat
+        heartbeat: windowData.heartbeat,
       };
     } else {
       const myWindowId = windowId || MultiWindowService.generateId();
       this.myWindow = {
         id: myWindowId,
         name: 'AppWindow ' + myWindowId,
-        heartbeat: -1
+        heartbeat: -1,
       };
     }
 
@@ -289,7 +287,7 @@ export class MultiWindowService {
       event,
       data,
       payload,
-      send: false
+      send: false,
     };
 
     return messageId;
@@ -324,6 +322,7 @@ export class MultiWindowService {
             ' this id, changed id to ' + this.myWindow.id);
           this.storageService.setWindowName(this.generateWindowKey(this.myWindow.id));
         }
+
         return;
       }
 
@@ -422,7 +421,7 @@ export class MultiWindowService {
       heartbeat: now,
       id: this.myWindow.id,
       name: this.myWindow.name,
-      messages: Object.keys(this.outboxCache).map(key => this.outboxCache[key])
+      messages: Object.keys(this.outboxCache).map(key => this.outboxCache[key]),
     });
 
     if (this.myWindow.heartbeat === -1) {
@@ -436,16 +435,15 @@ export class MultiWindowService {
   }
 
   private scanForWindows = () => {
-    this.knownWindows =
-      this.storageService.getLocalObjects<WindowData>(
-        this.storageService.getLocalItemKeys().filter((key) => this.isWindowKey(key))
-      ).map(({id, name, heartbeat}: WindowData) => {
+    this.knownWindows = this.storageService.getLocalObjects<WindowData>(
+      this.storageService.getLocalItemKeys().filter((key) => this.isWindowKey(key)))
+      .map(({id, name, heartbeat}: WindowData) => {
         return {
           id,
           name,
           heartbeat,
           stalled: new Date().getTime() - heartbeat > this.config.heartbeat * 2,
-          self: this.myWindow.id === id
+          self: this.myWindow.id === id,
         };
       });
     this.windowSubject.next(this.knownWindows);

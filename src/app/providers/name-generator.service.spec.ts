@@ -5,7 +5,7 @@ import { NameGeneratorService } from './name-generator.service';
 describe('NameGeneratorService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [NameGeneratorService]
+      providers: [NameGeneratorService],
     });
   });
 

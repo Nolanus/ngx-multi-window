@@ -15,13 +15,13 @@ const defaultMultiWindowConfig: MultiWindowConfig = {
 
 @NgModule({
   imports: [CommonModule],
-  providers: [StorageService, MultiWindowService]
+  providers: [StorageService, MultiWindowService],
 })
 export class MultiWindowModule {
   static forRoot(config: MultiWindowConfig = {}): ModuleWithProviders {
     return {
       ngModule: MultiWindowModule,
-      providers: [MultiWindowService, {provide: 'ngxmw_config', useValue: {...defaultMultiWindowConfig, ...config}}]
+      providers: [MultiWindowService, {provide: 'ngxmw_config', useValue: {...defaultMultiWindowConfig, ...config}}],
     };
   }
 }

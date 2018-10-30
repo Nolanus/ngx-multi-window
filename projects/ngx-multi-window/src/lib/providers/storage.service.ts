@@ -42,6 +42,7 @@ export class StorageService {
       return false;
     }
     this.setItem(storage, key, jsonString);
+
     return true;
   }
 
@@ -150,18 +151,18 @@ export class StorageService {
     for (let i = 0; i < storage.length; i++) {
       keys.push(localStorage.key(i));
     }
+
     return keys;
   }
 }
 
 /* singleton pattern taken from https://github.com/angular/angular/issues/13854 */
-export function StorageServiceProviderFactory(parentDispatcher: StorageService) {
+export const StorageServiceProviderFactory = (parentDispatcher: StorageService) => {
   return parentDispatcher || new StorageService();
-}
+};
 
 export const StorageServiceProvider = {
   provide: StorageService,
   deps: [[new Optional(), new SkipSelf(), StorageService]],
-  useFactory: StorageServiceProviderFactory
+  useFactory: StorageServiceProviderFactory,
 };
-

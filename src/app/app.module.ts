@@ -6,19 +6,19 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { MultiWindowConfig, MultiWindowModule } from 'ngx-multi-window';
 
-const config: MultiWindowConfig = { heartbeat: 542 };
+const config: MultiWindowConfig = {heartbeat: 542};
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    MultiWindowModule.forRoot(config)
+    MultiWindowModule.forRoot(config),
   ],
-  providers: [Location, { provide: LocationStrategy, useClass: PathLocationStrategy }],
-  bootstrap: [AppComponent]
+  providers: [Location, {provide: LocationStrategy, useClass: PathLocationStrategy}],
+  bootstrap: [AppComponent],
 })
 export class AppModule {
 }

@@ -5,7 +5,7 @@ import { NameGeneratorService } from './providers/name-generator.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
   ownName: string;
@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
     if (recipientId === this.ownId) {
       // Catch sending messages to itself. Trying to do so throws an error from multiWindowService.sendMessage()
       this.logs.unshift('Can\'t send messages to itself. Select another window.');
+
       return;
     }
     this.multiWindowService.sendMessage(recipientId, 'customEvent', message).subscribe(

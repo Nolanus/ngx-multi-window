@@ -4,7 +4,6 @@ export interface MultiWindowConfig {
    */
   keyPrefix?: string;
 
-
   /**
    * Time in milliseconds how often a heartbeat should be performed. During a heartbeat a window
    * looks for new messages from other windows and processes these messages.

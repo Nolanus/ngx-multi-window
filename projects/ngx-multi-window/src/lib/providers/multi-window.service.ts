@@ -440,7 +440,7 @@ export class MultiWindowService {
     private scanForWindows = () => {
         this.knownWindows =
             this.storageService.getLocalObjects<WindowData>(
-                this.storageService.getLocalItemKeys().filter(this.isWindowKey)
+        this.storageService.getLocalItemKeys().filter((key) => this.isWindowKey(key))
             ).map(({id, name, heartbeat}: WindowData) => {
                 return {
                     id,

@@ -2,6 +2,7 @@
   "rulesDirectory": [
     "node_modules/codelyzer"
   ],
+  "extends": ["./custom_tslint.json"],
   "rules": {
     "arrow-return-shorthand": true,
     "callable-types": true,
@@ -82,7 +83,7 @@
       "check-else",
       "check-whitespace"
     ],
-    "prefer-const": true,
+    "PREFER-const": true,
     "quotemark": [
       true,
       "single"

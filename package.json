@@ -2,16 +2,17 @@
   "name": "ngx-multi-window-demo",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build ngx-multi-window --prod && npm run copy:readme",
     "build:app": "ng build --prod --aot --baseHref=/ngx-multi-window/",
+    "build:lib": "ng build ngx-multi-window --prod && npm run copy:readme",
+    "copy:readme": "cpx README.md dist/ngx-multi-window",
     "deploy:app": "./deploy.sh dist/$npm_package_name/",
-    "test": "ng test ngx-multi-window",
-    "test:ci": "ng test ngx-multi-window --watch=false",
-    "lint": "ng lint",
     "e2e": "ng e2e",
-    "copy:readme": "cpx README.md dist/ngx-multi-window"
+    "lint": "ng lint",
+    "ng": "ng",
+    "release:lib": "npm run lint && npm run build:lib && cd dist/ngx-multi-window && npm publish",
+    "start": "ng serve",
+    "test": "ng test ngx-multi-window",
+    "test:ci": "ng test ngx-multi-window --watch=false"
   },
   "private": true,
   "dependencies": {

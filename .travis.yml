@@ -2,8 +2,8 @@ sudo: required
 
 language: node_js
 
-services:
-  - docker
+#services:
+#  - docker
 
 #addons:
 #  sauce_connect: true
@@ -30,7 +30,9 @@ install:
 script:
   # Execute the tests
  - npm run test:ci
- # Build the demo app
+  # Build the library
+ - npm run build:lib
+  # Build the demo app
  - npm run build:app
 
 after_success:

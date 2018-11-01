@@ -149,7 +149,7 @@ export class StorageService {
   private getStorageItemKeys(storage: Storage): string[] {
     const keys = [];
     for (let i = 0; i < storage.length; i++) {
-      keys.push(localStorage.key(i));
+      keys.push(storage.key(i));
     }
 
     return keys;

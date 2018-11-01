@@ -1,3 +1,6 @@
+/**
+ * Object representing the configuration options for the MultiWindow Module
+ */
 export interface MultiWindowConfig {
   /**
    * String to be used as prefix when storing data in the localstorage

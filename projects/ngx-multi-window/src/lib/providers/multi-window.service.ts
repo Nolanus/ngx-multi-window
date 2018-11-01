@@ -4,6 +4,7 @@ import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
 
 import { StorageService } from './storage.service';
+import { defaultMultiWindowConfig, NGXMW_CONFIG } from './config.provider';
 import { MultiWindowConfig } from '../types/multi-window.config';
 import { WindowData, AppWindow, KnownAppWindow } from '../types/window.type';
 import { Message, MessageType, MessageTemplate } from '../types/message.type';
@@ -46,7 +47,7 @@ export class MultiWindowService {
     return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
   }
 
-  private generatePayloadKey({messageId}: Message): string {
+  private generatePayloadKey({ messageId }: Message): string {
     return this.config.keyPrefix + 'payload_' + messageId;
   }
 
@@ -58,11 +59,9 @@ export class MultiWindowService {
     return key.indexOf(this.config.keyPrefix + 'w_') === 0;
   }
 
-  constructor(@Inject('ngxmw_config') config: MultiWindowConfig, @Optional() private location: Location,
+  constructor(@Inject(NGXMW_CONFIG) customConfig: MultiWindowConfig, @Optional() private location: Location,
               private storageService: StorageService) {
-    if (config) {
-      this.config = config;
-    }
+    this.config = { ...defaultMultiWindowConfig, ...customConfig };
 
     let windowName;
     if (location) {
@@ -273,7 +272,7 @@ export class MultiWindowService {
     this.heartbeat();
   }
 
-  private pushToOutbox({recipientId, type, event, data, payload}: MessageTemplate,
+  private pushToOutbox({ recipientId, type, event, data, payload }: MessageTemplate,
                        messageId: string = MultiWindowService.generateId()): string {
     if (recipientId === this.id) {
       throw new Error('Cannot send messages to self');
@@ -361,7 +360,7 @@ export class MultiWindowService {
             // confirmation in our own outbox.
 
             if (!(this.outboxCache[message.messageId] &&
-                this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
+              this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
               // We did not process that message
 
               // Create a new message for the message sender in the current window's
@@ -416,7 +415,6 @@ export class MultiWindowService {
       }
     });
 
-    // console.log('Writing local object for window ' + this.myWindow.id);
     this.storageService.setLocalObject(this.generateWindowKey(this.myWindow.id), {
       heartbeat: now,
       id: this.myWindow.id,
@@ -437,7 +435,7 @@ export class MultiWindowService {
   private scanForWindows = () => {
     this.knownWindows = this.storageService.getLocalObjects<WindowData>(
       this.storageService.getLocalItemKeys().filter((key) => this.isWindowKey(key)))
-      .map(({id, name, heartbeat}: WindowData) => {
+      .map(({ id, name, heartbeat }: WindowData) => {
         return {
           id,
           name,

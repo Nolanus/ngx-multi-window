@@ -101,7 +101,7 @@ You may inject a custom `MultiWindowConfig` object when importing the `MultiWind
 ```
 
 Check the description of the [MultiWindowConfig interface](https://github.com/Nolanus/ngx-multi-window/blob/master/projects/ngx-multi-window/src/lib/types/multi-window.config.ts) properties for options.
-The [default options](https://github.com/Nolanus/ngx-multi-window/blob/master/projects/ngx-multi-window/src/lib/multi-window.module.ts#L8) are
+The [default options](https://github.com/Nolanus/ngx-multi-window/blob/master/projects/ngx-multi-window/src/lib/providers/config.provider.ts#L6) are
 ```typescript
 {
   keyPrefix: 'ngxmw_',

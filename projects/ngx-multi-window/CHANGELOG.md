@@ -1,3 +1,7 @@
+## 0.2.3 (2018-11-01)
+
+- Fix problem with config usage and AOT compilation
+
 ## 0.2.2 (2018-10-30)
 
 - Fix problem with "other" windows not being detected in IE (#29, #23, be5fdc0)

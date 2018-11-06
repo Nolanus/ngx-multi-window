@@ -5,21 +5,21 @@ import {FormsModule} from '@angular/forms';
 
 const multiWindowConfig = {
   heartbeat: 1000,
-  newWindowScan: 1000
+  newWindowScan: 1000,
 };
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
-        AppComponent
+        AppComponent,
       ],
       providers: [
-        {provide: NGXMW_CONFIG, useValue: multiWindowConfig}
+        {provide: NGXMW_CONFIG, useValue: multiWindowConfig},
       ],
       imports: [
-        FormsModule
-      ]
+        FormsModule,
+      ],
     }).compileComponents();
   }));
 

@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, OnDestroy, OnInit, Optional } from '@angular/core';
 import { Location } from '@angular/common';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
@@ -8,6 +8,10 @@ import { defaultMultiWindowConfig, NGXMW_CONFIG } from './config.provider';
 import { MultiWindowConfig } from '../types/multi-window.config';
 import { WindowData, AppWindow, KnownAppWindow } from '../types/window.type';
 import { Message, MessageType, MessageTemplate } from '../types/message.type';
+import { WindowRef } from 'ngx-multi-window/lib/providers/window.provider';
+import { NameSafeStrategy } from 'ngx-multi-window/lib/types/name-safe-strategy.enum';
+import { isString } from 'util';
+import { stringDistance } from 'codelyzer/util/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +51,19 @@ export class MultiWindowService {
     return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
   }
 
-  private generatePayloadKey({ messageId }: Message): string {
+  private tryMatchWindowKey(source: string): string {
+    const nameRegex = new RegExp(
+      // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
+      this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + 'w_([a-z0-9]+)'
+    );
+    const match = source.match(nameRegex);
+    if (match !== null) {
+      return match[1];
+    }
+    return null;
+  }
+
+  private generatePayloadKey({messageId}: Message): string {
     return this.config.keyPrefix + 'payload_' + messageId;
   }
 
@@ -60,22 +76,36 @@ export class MultiWindowService {
   }
 
   constructor(@Inject(NGXMW_CONFIG) customConfig: MultiWindowConfig, @Optional() private location: Location,
-              private storageService: StorageService) {
-    this.config = { ...defaultMultiWindowConfig, ...customConfig };
+              private storageService: StorageService, private windowRef: WindowRef) {
+    this.config = {...defaultMultiWindowConfig, ...customConfig};
 
-    let windowName;
-    if (location) {
+    let windowId: string;
+
+    if (this.location) {
       // Try to extract the new window name from the location path
-      const nameRegex = new RegExp(
-        // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
-        this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + 'w_([a-z0-9]+)'
-      );
-      const match = location.path(true).match(nameRegex);
-      if (match !== null) {
-        windowName = match[1];
+      windowId = this.tryMatchWindowKey(this.location.path(true));
+    }
+    // Only check the name safe strategy if no id has been extracted from the path already
+    if (!windowId && this.config.nameSafeStrategy !== NameSafeStrategy.NONE) {
+      // There might be window data stored in the window.name property, try restoring it
+      const storedWindowData = this.windowRef.nativeWindow.name;
+
+      if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_BACKUP) {
+        // There should be a JSON string in the window.name, try parsing it and set the values
+        try {
+          const storedJsonData = JSON.parse(storedWindowData);
+          windowId = storedJsonData.ngxmw_id;
+          this.windowRef.nativeWindow.name = storedJsonData.backup;
+        } catch (ex) { // Swallow JSON parsing exceptions, as we can't handle them anyway
+        }
+      } else {
+        windowId = this.tryMatchWindowKey(storedWindowData);
+        if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_WHEN_EMPTY) {
+          this.windowRef.nativeWindow.name = '';
+        }
       }
     }
-    this.init(windowName);
+    this.init(windowId);
     this.start();
   }
 
@@ -236,6 +266,18 @@ export class MultiWindowService {
       urlString: this.generateWindowKey(newWindowId),
       created: this.messageTracker[messageId].pipe(ignoreElements()),
     };
+  }
+
+  public saveWindow(): void {
+    if (this.config.nameSafeStrategy !== NameSafeStrategy.NONE) {
+      const windowId = this.generateWindowKey(this.id);
+      if ((this.config.nameSafeStrategy === NameSafeStrategy.SAVE_WHEN_EMPTY && !this.windowRef.nativeWindow.name)
+        || this.config.nameSafeStrategy === NameSafeStrategy.SAVE_FORCE) {
+        this.windowRef.nativeWindow.name = windowId;
+      } else if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_BACKUP) {
+        this.windowRef.nativeWindow.name = JSON.stringify({ngxmw_id: windowId, backup: this.windowRef.nativeWindow.name});
+      }
+    }
   }
 
   private init(windowId?: string): void {

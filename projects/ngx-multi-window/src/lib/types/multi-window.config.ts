@@ -1,3 +1,4 @@
+import { NameSafeStrategy } from 'ngx-multi-window/lib/types/name-safe-strategy.enum';
 /**
  * Object representing the configuration options for the MultiWindow Module
  */
@@ -31,4 +32,6 @@ export interface MultiWindowConfig {
    * Should be a multiple of {@link MultiWindowConfig#newWindowScan}
    */
   windowTimeout?: number;
+
+  nameSafeStrategy?: NameSafeStrategy;
 }

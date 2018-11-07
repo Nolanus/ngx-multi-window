@@ -1,7 +1,7 @@
 {
   "name": "ngx-multi-window",
   "description": "Cross-window communication for multi-window angular applications",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "Sebastian Fuss <sebastian.fuss@googlemail.com>",
   "license": "MIT",
   "repository": {

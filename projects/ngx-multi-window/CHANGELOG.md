@@ -1,3 +1,7 @@
+## 0.2.4 (2018-11-07)
+
+- Export Config InjectionToken for tests (closes [#39](https://github.com/Nolanus/ngx-multi-window/issues/39), [cb78fee](https://github.com/Nolanus/ngx-multi-window/commit/cb78fee63ded35171b0c76d6859898cdd460098f))
+
 ## 0.2.3 (2018-11-01)
 
 - Fix problem with config usage and AOT compilation ([9ec1f11](https://github.com/Nolanus/ngx-multi-window/commit/9ec1f11a0ec4d953ca7735a8c544583c717e270f))

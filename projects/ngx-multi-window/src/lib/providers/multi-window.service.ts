@@ -301,23 +301,23 @@ export class MultiWindowService {
 
     this.knownWindows.forEach(windowData => {
       // Load the window from the localstorage
-      const window = this.storageService.getLocalObject<AppWindow>(this.generateWindowKey(windowData.id));
+      const appWindow = this.storageService.getLocalObject<AppWindow>(this.generateWindowKey(windowData.id));
 
-      if (window === null) {
+      if (appWindow === null) {
         // No window found, it possibly got closed/removed since our last scanForWindow
         return;
       }
 
-      if (window.id === this.myWindow.id) {
+      if (appWindow.id === this.myWindow.id) {
         // Ignore messages from myself (not done using Array.filter to reduce array iterations)
         // but check for proper last heartbeat time
-        if (this.myWindow.heartbeat !== -1 && this.myWindow.heartbeat !== window.heartbeat) {
+        if (this.myWindow.heartbeat !== -1 && this.myWindow.heartbeat !== appWindow.heartbeat) {
           // The heartbeat value in the localstorage is a different one than the one we wrote into localstorage
           // during our last heartbeat. There are probably two app windows
           // using the same window id => change the current windows id
           this.myWindow.id = MultiWindowService.generateId();
           // tslint:disable-next-line:no-console
-          console.warn('Window ' + window.id + '  detected that there is probably another instance with' +
+          console.warn('Window ' + appWindow.id + '  detected that there is probably another instance with' +
             ' this id, changed id to ' + this.myWindow.id);
           this.storageService.setWindowName(this.generateWindowKey(this.myWindow.id));
         }
@@ -325,18 +325,18 @@ export class MultiWindowService {
         return;
       }
 
-      if (now - window.heartbeat > this.config.windowTimeout) {
+      if (now - appWindow.heartbeat > this.config.windowTimeout) {
         // The window seems to be dead, remove the entry from the localstorage
-        this.storageService.removeLocalItem(this.generateWindowKey(window.id));
+        this.storageService.removeLocalItem(this.generateWindowKey(appWindow.id));
       }
 
       // Update the windows name and heartbeat value in the list of known windows (that's what we iterate over)
-      windowData.name = window.name;
-      windowData.heartbeat = window.heartbeat;
+      windowData.name = appWindow.name;
+      windowData.heartbeat = appWindow.heartbeat;
 
-      if (window.messages && window.messages.length > 0) {
+      if (appWindow.messages && appWindow.messages.length > 0) {
         // This other window has messages, so iterate over the messages the other window has
-        window.messages.forEach(message => {
+        appWindow.messages.forEach(message => {
           if (message.recipientId !== this.myWindow.id) {
             // The message is not targeted to the current window
             return;

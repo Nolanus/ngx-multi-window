@@ -41,38 +41,6 @@ export class AppModule {
 
 Finally you need to specify how your application should load the ngx-multi-window library:
 
-### Angular modules
-
-All the compiled JavaScript files use ES2015 module format, so they are ready for usage with [RollupJS](http://rollupjs.org/). However, you cannot use them with SystemJS.
-
-`.metadata.json` files are generated for usage with [Angular AoT compiler](https://angular.io/docs/ts/latest/cookbook/aot-compiler.html).
-
-### SystemJS
-
-UMD bundles are available for SystemJS loading. Example:
-
-```js
-System.config({
-    paths: {
-        'npm:': 'node_modules/'
-    },
-    map: {
-        app: 'app',
-
-        '@angular/core'   : 'npm:@angular/core/bundles/core.umd.js',
-        '@angular/common' : 'npm:@angular/common/bundles/common.umd.js',
-        // further angular bundles...
-
-        'ngx-multi-window': 'npm:ngx-multi-window/bundles/ngx-multi-window.umd.js',
-
-        rxjs: 'npm:rxjs',
-    },
-    packages: {
-        app : {defaultExtension: 'js', main: './main.js'},
-        rxjs: {defaultExtension: 'js'}
-    }
-});
-```
 ## Usage
 
 Inject the `MultiWindowService` into your component or service.
@@ -109,6 +77,7 @@ The [default options](https://github.com/Nolanus/ngx-multi-window/blob/master/pr
   newWindowScan: 5000,
   messageTimeout: 10000,
   windowTimeout: 15000,
+  windowSaveStrategy: WindowSaveStrategy.NONE,
 }
 ```
 
@@ -184,9 +153,28 @@ No special handling is necessary to open new windows. Every new window/app will 
 by writing to its key in the local storage. Existing windows will identify new windows 
 after `MultiWindowConfig.newWindowScan` at the latest.
 
-The `MultiWindowService` offers convenient method `newWindow()` which provides details for the 
+The `MultiWindowService` offers a convenience method `newWindow()` which provides details for the 
 new window's start url. If used the returned observable can be utilized to get notified 
 once the new window is ready to consume/receive message. 
+
+### Save window name
+
+The library comes with a mechanism to save the window id using the browser's `window.name` property. This 
+property is persisted on page reloads, resulting in the same tab/window running your angular application to keep 
+the ngx-multi-window id even when reloading the page.
+Note: Only the window id is persisted, the customizable window name and messages are kept in the local storage,
+but are automatically rediscovered by the new window once it starts consuming messages.
+
+To save the window id, set the respective config property `nameSafeStrategy` to the desired value. Additionally 
+one needs to call `saveWindow()` function e.g. during window unloading by attaching a `HostListener` in your 
+main AppComponent.
+
+```typescript
+@HostListener('window:unload')
+unloadHandler() {
+  this.multiWindowService.saveWindow();
+}
+```
 
 ## Communication strategy
 

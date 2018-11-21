@@ -8,8 +8,8 @@ import { defaultMultiWindowConfig, NGXMW_CONFIG } from './config.provider';
 import { MultiWindowConfig } from '../types/multi-window.config';
 import { AppWindow, KnownAppWindow, WindowData } from '../types/window.type';
 import { Message, MessageTemplate, MessageType } from '../types/message.type';
-import { WindowRef } from 'ngx-multi-window/lib/providers/window.provider';
-import { NameSafeStrategy } from 'ngx-multi-window/lib/types/name-safe-strategy.enum';
+import { WindowRef } from '../providers/window.provider';
+import { NameSafeStrategy } from '../types/name-safe-strategy.enum';
 
 @Injectable({
   providedIn: 'root',

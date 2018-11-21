@@ -1,4 +1,7 @@
-export enum NameSafeStrategy {
+/**
+ * A representation of a strategy on how to save the window id in the native window.name property.
+ */
+export enum WindowSaveStrategy {
   /**
    * Default behaviour. Window data will not be saved.
    */

@@ -11,5 +11,5 @@ export * from './lib/providers/window.provider';
 
 export * from './lib/types/message.type';
 export * from './lib/types/multi-window.config';
-export * from './lib/types/name-safe-strategy.enum';
+export * from './lib/types/window-save-strategy.enum';
 export * from './lib/types/window.type';

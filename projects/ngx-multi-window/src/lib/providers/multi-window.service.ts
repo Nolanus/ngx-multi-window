@@ -9,7 +9,7 @@ import { MultiWindowConfig } from '../types/multi-window.config';
 import { AppWindow, KnownAppWindow, WindowData } from '../types/window.type';
 import { Message, MessageTemplate, MessageType } from '../types/message.type';
 import { WindowRef } from '../providers/window.provider';
-import { NameSafeStrategy } from '../types/name-safe-strategy.enum';
+import { WindowSaveStrategy } from '../types/window-save-strategy.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -84,12 +84,12 @@ export class MultiWindowService {
       // Try to extract the new window name from the location path
       windowId = this.tryMatchWindowKey(this.location.path(true));
     }
-    // Only check the name safe strategy if no id has been extracted from the path already
-    if (!windowId && this.config.nameSafeStrategy !== NameSafeStrategy.NONE) {
+    // Only check the name save strategy if no id has been extracted from the path already
+    if (!windowId && this.config.windowSaveStrategy !== WindowSaveStrategy.NONE) {
       // There might be window data stored in the window.name property, try restoring it
       const storedWindowData = this.windowRef.nativeWindow.name;
 
-      if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_BACKUP) {
+      if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_BACKUP) {
         // There should be a JSON string in the window.name, try parsing it and set the values
         try {
           const storedJsonData = JSON.parse(storedWindowData);
@@ -99,7 +99,7 @@ export class MultiWindowService {
         }
       } else {
         windowId = this.tryMatchWindowKey(storedWindowData);
-        if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_WHEN_EMPTY) {
+        if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_WHEN_EMPTY) {
           this.windowRef.nativeWindow.name = '';
         }
       }
@@ -268,12 +268,12 @@ export class MultiWindowService {
   }
 
   public saveWindow(): void {
-    if (this.config.nameSafeStrategy !== NameSafeStrategy.NONE) {
+    if (this.config.windowSaveStrategy !== WindowSaveStrategy.NONE) {
       const windowId = this.generateWindowKey(this.id);
-      if ((this.config.nameSafeStrategy === NameSafeStrategy.SAVE_WHEN_EMPTY && !this.windowRef.nativeWindow.name)
-        || this.config.nameSafeStrategy === NameSafeStrategy.SAVE_FORCE) {
+      if ((this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_WHEN_EMPTY && !this.windowRef.nativeWindow.name)
+        || this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_FORCE) {
         this.windowRef.nativeWindow.name = windowId;
-      } else if (this.config.nameSafeStrategy === NameSafeStrategy.SAVE_BACKUP) {
+      } else if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_BACKUP) {
         this.windowRef.nativeWindow.name = JSON.stringify({ngxmw_id: windowId, backup: this.windowRef.nativeWindow.name});
       }
     }

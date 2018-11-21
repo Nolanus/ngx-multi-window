@@ -1,13 +1,15 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { Location } from '@angular/common';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
 
 import { StorageService } from './storage.service';
 import { defaultMultiWindowConfig, NGXMW_CONFIG } from './config.provider';
 import { MultiWindowConfig } from '../types/multi-window.config';
-import { WindowData, AppWindow, KnownAppWindow } from '../types/window.type';
-import { Message, MessageType, MessageTemplate } from '../types/message.type';
+import { AppWindow, KnownAppWindow, WindowData } from '../types/window.type';
+import { Message, MessageTemplate, MessageType } from '../types/message.type';
+import { WindowRef } from '../providers/window.provider';
+import { WindowSaveStrategy } from '../types/window-save-strategy.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +49,20 @@ export class MultiWindowService {
     return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
   }
 
-  private generatePayloadKey({ messageId }: Message): string {
+  private tryMatchWindowKey(source: string): string {
+    const nameRegex = new RegExp(
+      // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
+      this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + 'w_([a-z0-9]+)'
+    );
+    const match = source.match(nameRegex);
+    if (match !== null) {
+      return match[1];
+    }
+
+    return null;
+  }
+
+  private generatePayloadKey({messageId}: Message): string {
     return this.config.keyPrefix + 'payload_' + messageId;
   }
 
@@ -60,22 +75,36 @@ export class MultiWindowService {
   }
 
   constructor(@Inject(NGXMW_CONFIG) customConfig: MultiWindowConfig, @Optional() private location: Location,
-              private storageService: StorageService) {
-    this.config = { ...defaultMultiWindowConfig, ...customConfig };
+              private storageService: StorageService, private windowRef: WindowRef) {
+    this.config = {...defaultMultiWindowConfig, ...customConfig};
 
-    let windowName;
-    if (location) {
+    let windowId: string;
+
+    if (this.location) {
       // Try to extract the new window name from the location path
-      const nameRegex = new RegExp(
-        // Escape any potential regex-specific chars in the keyPrefix which may be changed by the dev
-        this.config.keyPrefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + 'w_([a-z0-9]+)'
-      );
-      const match = location.path(true).match(nameRegex);
-      if (match !== null) {
-        windowName = match[1];
+      windowId = this.tryMatchWindowKey(this.location.path(true));
+    }
+    // Only check the name save strategy if no id has been extracted from the path already
+    if (!windowId && this.config.windowSaveStrategy !== WindowSaveStrategy.NONE) {
+      // There might be window data stored in the window.name property, try restoring it
+      const storedWindowData = this.windowRef.nativeWindow.name;
+
+      if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_BACKUP) {
+        // There should be a JSON string in the window.name, try parsing it and set the values
+        try {
+          const storedJsonData = JSON.parse(storedWindowData);
+          windowId = storedJsonData.ngxmw_id;
+          this.windowRef.nativeWindow.name = storedJsonData.backup;
+        } catch (ex) { // Swallow JSON parsing exceptions, as we can't handle them anyway
+        }
+      } else {
+        windowId = this.tryMatchWindowKey(storedWindowData);
+        if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_WHEN_EMPTY) {
+          this.windowRef.nativeWindow.name = '';
+        }
       }
     }
-    this.init(windowName);
+    this.init(windowId);
     this.start();
   }
 
@@ -238,6 +267,18 @@ export class MultiWindowService {
     };
   }
 
+  public saveWindow(): void {
+    if (this.config.windowSaveStrategy !== WindowSaveStrategy.NONE) {
+      const windowId = this.generateWindowKey(this.id);
+      if ((this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_WHEN_EMPTY && !this.windowRef.nativeWindow.name)
+        || this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_FORCE) {
+        this.windowRef.nativeWindow.name = windowId;
+      } else if (this.config.windowSaveStrategy === WindowSaveStrategy.SAVE_BACKUP) {
+        this.windowRef.nativeWindow.name = JSON.stringify({ngxmw_id: windowId, backup: this.windowRef.nativeWindow.name});
+      }
+    }
+  }
+
   private init(windowId?: string): void {
     const windowKey = windowId
       ? this.generateWindowKey(windowId)
@@ -272,7 +313,7 @@ export class MultiWindowService {
     this.heartbeat();
   }
 
-  private pushToOutbox({ recipientId, type, event, data, payload }: MessageTemplate,
+  private pushToOutbox({recipientId, type, event, data, payload}: MessageTemplate,
                        messageId: string = MultiWindowService.generateId()): string {
     if (recipientId === this.id) {
       throw new Error('Cannot send messages to self');
@@ -360,7 +401,7 @@ export class MultiWindowService {
             // confirmation in our own outbox.
 
             if (!(this.outboxCache[message.messageId] &&
-              this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
+                this.outboxCache[message.messageId].type === MessageType.MESSAGE_RECEIVED)) {
               // We did not process that message
 
               // Create a new message for the message sender in the current window's
@@ -435,7 +476,7 @@ export class MultiWindowService {
   private scanForWindows = () => {
     this.knownWindows = this.storageService.getLocalObjects<WindowData>(
       this.storageService.getLocalItemKeys().filter((key) => this.isWindowKey(key)))
-      .map(({ id, name, heartbeat }: WindowData) => {
+      .map(({id, name, heartbeat}: WindowData) => {
         return {
           id,
           name,

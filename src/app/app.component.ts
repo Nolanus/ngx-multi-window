@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { MultiWindowService, Message, KnownAppWindow } from 'ngx-multi-window';
 import { NameGeneratorService } from './providers/name-generator.service';
 
@@ -15,6 +15,11 @@ export class AppComponent implements OnInit {
   logs: string[] = [];
 
   newName: string;
+
+  @HostListener('window:unload')
+  unloadHandler() {
+    this.multiWindowService.saveWindow();
+  }
 
   constructor(private multiWindowService: MultiWindowService, private nameGenerator: NameGeneratorService) {
   }

@@ -4,9 +4,9 @@ import { Location, LocationStrategy, PathLocationStrategy } from '@angular/commo
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
-import { MultiWindowConfig, MultiWindowModule } from 'ngx-multi-window';
+import { MultiWindowConfig, MultiWindowModule, WindowSaveStrategy } from 'ngx-multi-window';
 
-const config: MultiWindowConfig = {heartbeat: 542};
+const config: MultiWindowConfig = {windowSaveStrategy: WindowSaveStrategy.SAVE_WHEN_EMPTY};
 
 @NgModule({
   declarations: [

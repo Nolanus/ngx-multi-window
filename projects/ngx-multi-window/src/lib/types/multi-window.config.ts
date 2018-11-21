@@ -1,3 +1,4 @@
+import { WindowSaveStrategy } from 'ngx-multi-window/lib/types/window-save-strategy.enum';
 /**
  * Object representing the configuration options for the MultiWindow Module
  */
@@ -31,4 +32,11 @@ export interface MultiWindowConfig {
    * Should be a multiple of {@link MultiWindowConfig#newWindowScan}
    */
   windowTimeout?: number;
+
+  /**
+   * A strategy to be used when it comes to saving the window name.
+   *
+   * Refer to the different enum values for detailed description about the possible values.
+   */
+  windowSaveStrategy?: WindowSaveStrategy;
 }

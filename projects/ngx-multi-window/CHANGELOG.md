@@ -1,3 +1,8 @@
+## 0.3.0 (2018-11-21)
+
+- Add support for angular 7 (closes [#35](https://github.com/Nolanus/ngx-multi-window/issues/35), [d7c7c5f](https://github.com/Nolanus/ngx-multi-window/commit/d7c7c5fcae64a7e2b3dd586ea87f187f426de27e))
+- New feature of persisting the window id on reload (closes [#26](https://github.com/Nolanus/ngx-multi-window/issues/26), [cd6985b](https://github.com/Nolanus/ngx-multi-window/commit/cd6985b52c4e90e3e573fd7269fc5a02ba2a0331))
+
 ## 0.2.4 (2018-11-07)
 
 - Export Config InjectionToken for tests (closes [#39](https://github.com/Nolanus/ngx-multi-window/issues/39), [cb78fee](https://github.com/Nolanus/ngx-multi-window/commit/cb78fee63ded35171b0c76d6859898cdd460098f))

@@ -4,7 +4,8 @@ export enum NameSafeStrategy {
    */
   NONE,
   /**
-   * Only save the window data when the storage (native window.name property) is empty/undefined, meaning nothing else is probably utilizing it
+   * Only save the window data when the storage (native window.name property) is empty/undefined, meaning nothing else is
+   * probably utilizing it
    */
   SAVE_WHEN_EMPTY,
   /**
@@ -15,5 +16,5 @@ export enum NameSafeStrategy {
    * Save window data, but backup probable existing data in the storage and restore the original data after reading the window data.
    * Restoring the original data might not happen "on time" for the script using it, which would require delaying it's execution.
    */
-  SAVE_BACKUP
+  SAVE_BACKUP,
 }

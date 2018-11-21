@@ -1,3 +1,7 @@
+## 0.3.1 (2018-11-21)
+
+- Fix problem with package published to npm
+
 ## 0.3.0 (2018-11-21)
 
 - Add support for angular 7 (closes [#35](https://github.com/Nolanus/ngx-multi-window/issues/35), [d7c7c5f](https://github.com/Nolanus/ngx-multi-window/commit/d7c7c5fcae64a7e2b3dd586ea87f187f426de27e))

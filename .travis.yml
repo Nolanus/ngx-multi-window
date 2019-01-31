@@ -2,12 +2,6 @@ sudo: required
 
 language: node_js
 
-#services:
-#  - docker
-
-#addons:
-#  sauce_connect: true
-
 env:
   global:
   - ENCRYPTION_LABEL: "7cec43065660"
@@ -21,23 +15,20 @@ before_install:
 install:
   # Install the library deps
   - npm install
+  # Install commitlint cli for travis
+  npm install @commitlint/travis-cli
   # Lint the demo app
   - npm run lint
-  # Start the docker container that serves the example app
-  # - docker run --name ng2mwDemo -v $(pwd)/angular.nginx.conf:/etc/nginx/conf.d/angular.nginx.conf:ro -v $DEMO_DIST:/app:ro -d -p 127.0.0.1:8000:8000 nginx
-  # - sleep 3 # give the server a jump start
 
 script:
+  # Lint the commit messages
+  - commitlint-travis
   # Execute the tests
- - npm run test:ci
+  - npm run test:ci
   # Build the library
- - npm run build:lib
+  - npm run build:lib
   # Build the demo app
- - npm run build:app
+  - npm run build:app
 
 after_success:
   - npm run deploy:app
-
-#after_script:
-#  - docker stop ng2mwDemo
-#  - docker rm ng2mwDemo

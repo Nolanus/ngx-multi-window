@@ -5,6 +5,7 @@
     "build:app": "ng build --prod --aot --baseHref=/ngx-multi-window/",
     "build:lib": "ng build ngx-multi-window --prod && npm run copy:readme",
     "copy:readme": "cpx README.md dist/ngx-multi-window",
+    "commit": "git-cz",
     "deploy:app": "./deploy.sh dist/$npm_package_name/",
     "e2e": "ng e2e",
     "lint": "ng lint",
@@ -35,11 +36,16 @@
     "@angular/cli": "~7.3.0",
     "@angular/compiler-cli": "^7.2.3",
     "@angular/language-service": "^7.2.3",
+    "@commitlint/cli": "^7.4.0",
+    "@commitlint/config-conventional": "^7.3.1",
     "@types/jasmine": "^3.3.8",
     "@types/jasminewd2": "^2.0.6",
     "@types/node": "~10.12.20",
     "codelyzer": "~4.5.0",
+    "commitizen": "^3.0.5",
     "cpx": "^1.5.0",
+    "cz-conventional-changelog": "^2.1.0",
+    "husky": "^1.3.1",
     "jasmine-core": "~3.3.0",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "^4.0.0",
@@ -54,5 +60,20 @@
     "tslib": "^1.9.0",
     "tslint": "~5.12.1",
     "typescript": "~3.2.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }

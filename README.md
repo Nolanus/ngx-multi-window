@@ -3,9 +3,9 @@
 Pull-based cross-window communication for multi-window angular applications
 
 [![Build Status](https://travis-ci.org/Nolanus/ngx-multi-window.svg?branch=master)](https://travis-ci.org/Nolanus/ngx-multi-window)
-[![Dependency Status](https://david-dm.org/Nolanus/ngx-multi-window.svg)](https://david-dm.org/Nolanus/ngx-multi-window)
-[![devDependency Status](https://david-dm.org/Nolanus/ngx-multi-window/dev-status.svg)](https://david-dm.org/Nolanus/ngx-multi-window?type=dev)
-[![peerDependency Status](https://david-dm.org/Nolanus/ngx-multi-window/peer-status.svg)](https://david-dm.org/Nolanus/ngx-multi-window?type=peer)
+[![dependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window)
+[![devDependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/dev-status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window&type=dev)
+[![peerDependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/peer-status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window&type=peer)
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/Nolanus/ngx-multi-window.svg)](https://greenkeeper.io/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
@@ -196,14 +196,12 @@ Sending message from sender A to recipient B involves the following steps:
 
 ## Example App
 
-This project contains a demo application that has been 
-adapted to showcase the functionality of ngx-multi-window. 
-Run the demo app by checking out that repository and execute 
-the following command in the project root directory:
+This project contains a demo application that has been adapted to showcase the functionality of ngx-multi-window. 
+Run the demo app by checking out that repository and execute the following command in the project root directory:
 
  ```
 npm install
-npm run start
+ng serve
  ```
  
 ## TODO

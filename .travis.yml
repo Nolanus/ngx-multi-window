@@ -16,7 +16,7 @@ install:
   # Install the library deps
   - npm install
   # Install commitlint cli for travis
-  npm install @commitlint/travis-cli
+  - npm install @commitlint/travis-cli
   # Lint the demo app
   - npm run lint
 

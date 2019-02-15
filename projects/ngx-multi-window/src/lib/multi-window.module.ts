@@ -9,13 +9,18 @@ import { WindowRef } from './providers/window.provider';
 
 @NgModule({
   imports: [CommonModule],
-  providers: [StorageService, MultiWindowService, WindowRef],
+  providers: [
+    StorageService,
+    MultiWindowService,
+    WindowRef,
+    {provide: NGXMW_CONFIG, useValue: {}},
+  ],
 })
 export class MultiWindowModule {
   static forRoot(config?: MultiWindowConfig): ModuleWithProviders {
     return {
       ngModule: MultiWindowModule,
-      providers: [MultiWindowService, { provide: NGXMW_CONFIG, useValue: config }],
+      providers: [MultiWindowService, {provide: NGXMW_CONFIG, useValue: config}],
     };
   }
 }

@@ -1,3 +1,7 @@
+## 0.3.2 (2019-02-15)
+
+- Fix bug causing non `forRoot()` module imports to fail ([c988132](https://github.com/Nolanus/ngx-multi-window/commit/c98813297d3531917de5ddd7cbcccf070b68f3f5)) 
+
 ## 0.3.1 (2018-11-21)
 
 - Fix problem with package published to npm

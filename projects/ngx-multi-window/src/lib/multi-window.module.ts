@@ -17,7 +17,7 @@ import { WindowRef } from './providers/window.provider';
   ],
 })
 export class MultiWindowModule {
-  static forRoot(config?: MultiWindowConfig): ModuleWithProviders {
+  static forRoot(config?: MultiWindowConfig): ModuleWithProviders<MultiWindowModule> {
     return {
       ngModule: MultiWindowModule,
       providers: [MultiWindowService, {provide: NGXMW_CONFIG, useValue: config}],

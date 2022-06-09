@@ -12,6 +12,9 @@
     "url": "https://github.com/Nolanus/ngx-multi-window/issues"
   },
   "homepage": "https://github.com/Nolanus/ngx-multi-window#readme",
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
     "@angular/common": ">=6.0.0-rc.0 <=14.0.0",
     "@angular/core": ">=6.0.0-rc.0 <=14.0.0"

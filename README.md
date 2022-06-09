@@ -142,7 +142,7 @@ initial message will be removed from the current windows postbox.
 To get the names and ids of other window/app instances the `MultiWindowService` offers two methods:
 
 `multiWindowService.onWindows()` returns an observable to subscribe to in case you require periodic updates of the 
-fellow windows. The observable will emit a new value every time the local storage has been scanned fpr the windows. 
+fellow windows. The observable will emit a new value every time the local storage has been scanned for the windows. 
 This by default happens every 5 seconds (`MultiWindowConfig.newWindowScan`).
 
 Use `multiWindowService.getKnownWindows` to return an array of `WindowData`.

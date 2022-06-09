@@ -87,6 +87,15 @@
               "src/assets"
             ]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -127,6 +136,15 @@
             "main": "projects/ngx-multi-window/src/test.ts",
             "tsConfig": "projects/ngx-multi-window/tsconfig.spec.json",
             "karmaConfig": "projects/ngx-multi-window/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         }
       }

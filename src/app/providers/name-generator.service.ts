@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-// tslint:disable:max-line-length
-
 @Injectable({
   providedIn: 'root',
 })

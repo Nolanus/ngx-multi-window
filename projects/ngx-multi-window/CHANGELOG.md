@@ -1,3 +1,11 @@
+## 0.5.0 (2022-06-10)
+
+- Requires angular v14
+
+## 0.4.1 (2022-06-10)
+
+- Build lib with angular v7 again to address pre v14 projects
+
 ## 0.4.0 (2022-06-08)
 
 - Fix deep import warning (closes [#81](https://github.com/Nolanus/ngx-multi-window/issues/35), [b6c3418](https://github.com/Nolanus/ngx-multi-window/commit/b6c34188e254a0aac7d3cd5944b8253ed5202383))

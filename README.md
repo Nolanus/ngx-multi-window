@@ -2,12 +2,6 @@
 
 Pull-based cross-window communication for multi-window angular applications
 
-[![Build Status](https://travis-ci.org/Nolanus/ngx-multi-window.svg?branch=master)](https://travis-ci.org/Nolanus/ngx-multi-window)
-[![dependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window)
-[![devDependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/dev-status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window&type=dev)
-[![peerDependencies Status](https://david-dm.org/Nolanus/ngx-multi-window/peer-status.svg?path=projects/ngx-multi-window)](https://david-dm.org/Nolanus/ngx-multi-window?path=projects/ngx-multi-window&type=peer)
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/Nolanus/ngx-multi-window.svg)](https://greenkeeper.io/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b175dcd8585a42bdbdb9c1ee2a313b3b)](https://www.codacy.com/app/sebastian-fuss/ngx-multi-window?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Nolanus/ngx-multi-window&amp;utm_campaign=Badge_Grade)
 
@@ -24,6 +18,15 @@ First you need to install the npm module:
 npm install ngx-multi-window --save
 ```
 
+For older angular versions you may install previous versions of this library:
+
+| ngx-multi-window version | compatible angular version |
+|--------------------------|----------------------------|
+| `0.5`                    | `14`                       |
+| `0.4.1`                  | `8 - 13`                   |
+| `0.3.2`                  | `7`                        |
+| `0.2.4`                  | `6`                        |
+
 Then add the `MultiWindowModule` to the imports array of your application module:
 
 ```typescript
@@ -39,7 +42,7 @@ export class AppModule {
 }
 ```
 
-Finally you need to specify how your application should load the ngx-multi-window library:
+Finally, you need to specify how your application should load the ngx-multi-window library:
 
 ## Usage
 
@@ -193,6 +196,8 @@ Sending message from sender A to recipient B involves the following steps:
 - B places a "MESSAGE_RECEIVED" message addressed to A in its own messages array
 - A picks up the "MESSAGE_RECEIVED" message in B's message array and removes the initial message from its own messages array
 - B identifies that the initial message has been removed from A's messages array and removes the receipt message from its own messages array
+
+![Communication Strategy showcase](communication.gif)
 
 ## Example App
 

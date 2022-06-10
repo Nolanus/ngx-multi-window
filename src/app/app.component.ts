@@ -71,15 +71,13 @@ export class AppComponent implements OnInit {
 
   public newWindow() {
     const newWindowData = this.multiWindowService.newWindow();
-    newWindowData.created.subscribe({
-        next: () => {
-        },
-        error: (err) => {
-          this.logs.unshift('An error occured while waiting for the new window to start consuming messages');
-        },
-        complete: () => {
-          this.logs.unshift('The new window with id ' + newWindowData.windowId + ' got created and starts consuming messages');
-        }
+    newWindowData.created.subscribe(() => {
+      },
+      (err) => {
+        this.logs.unshift('An error occured while waiting for the new window to start consuming messages');
+      },
+      () => {
+        this.logs.unshift('The new window with id ' + newWindowData.windowId + ' got created and starts consuming messages');
       }
     );
     window.open('?' + newWindowData.urlString);

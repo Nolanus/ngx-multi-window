@@ -1,4 +1,4 @@
-import { WindowSaveStrategy } from './window-save-strategy.enum';
+import { WindowSaveStrategy } from 'ngx-multi-window/lib/types/window-save-strategy.enum';
 /**
  * Object representing the configuration options for the MultiWindow Module
  */

@@ -357,7 +357,7 @@ export class MultiWindowService {
           // during our last heartbeat. There are probably two app windows
           // using the same window id => change the current windows id
           this.myWindow.id = MultiWindowService.generateId();
-          // eslint-disable-next-line no-console
+          // tslint:disable-next-line:no-console
           console.warn('Window ' + appWindow.id + '  detected that there is probably another instance with' +
             ' this id, changed id to ' + this.myWindow.id);
           this.storageService.setWindowName(this.generateWindowKey(this.myWindow.id));

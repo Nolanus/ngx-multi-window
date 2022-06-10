@@ -1,8 +1,3 @@
-## 0.4.0 (2022-06-08)
-
-- Fix deep import warning (closes [#81](https://github.com/Nolanus/ngx-multi-window/issues/35), [b6c3418](https://github.com/Nolanus/ngx-multi-window/commit/b6c34188e254a0aac7d3cd5944b8253ed5202383))
-- Add support for angular 7 to 14 (closes [#76](https://github.com/Nolanus/ngx-multi-window/issues/76) and [#87](https://github.com/Nolanus/ngx-multi-window/issues/87), [b6c3418](https://github.com/Nolanus/ngx-multi-window/commit/b6c34188e254a0aac7d3cd5944b8253ed5202383))
-
 ## 0.3.2 (2019-02-15)
 
 - Fix bug causing non `forRoot()` module imports to fail ([c988132](https://github.com/Nolanus/ngx-multi-window/commit/c98813297d3531917de5ddd7cbcccf070b68f3f5)) 

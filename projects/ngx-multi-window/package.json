@@ -1,7 +1,7 @@
 {
   "name": "ngx-multi-window",
   "description": "Cross-window communication for multi-window angular applications",
-  "version": "0.4.0",
+  "version": "0.3.2",
   "author": "Sebastian Fuss <sebastian.fuss@googlemail.com>",
   "license": "MIT",
   "repository": {
@@ -12,11 +12,8 @@
     "url": "https://github.com/Nolanus/ngx-multi-window/issues"
   },
   "homepage": "https://github.com/Nolanus/ngx-multi-window#readme",
-  "dependencies": {
-    "tslib": "^2.0.0"
-  },
   "peerDependencies": {
-    "@angular/common": ">=6.0.0-rc.0 <=14",
-    "@angular/core": ">=6.0.0-rc.0 <=14"
+    "@angular/common": ">=6.0.0-rc.0 <=14.0.0",
+    "@angular/core": ">=6.0.0-rc.0 <=14.0.0"
   }
 }

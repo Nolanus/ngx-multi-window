@@ -1,3 +1,7 @@
+## 0.6.0 (2022-12-27)
+
+- Requires angular v15
+
 ## 0.5.0 (2022-06-10)
 
 - Requires angular v14

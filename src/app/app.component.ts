@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { MultiWindowService, Message, KnownAppWindow } from 'ngx-multi-window';
 import { NameGeneratorService } from './providers/name-generator.service';
+import {delay} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,11 @@ export class AppComponent implements OnInit {
   constructor(private multiWindowService: MultiWindowService, private nameGenerator: NameGeneratorService) {
   }
 
+  public pause(milliseconds) {
+    var dt = new Date();
+    while ((new Date().getTime()) - dt.getTime() <= milliseconds) { /* Do nothing */ }
+  }
+
   ngOnInit(): void {
     this.ownId = this.multiWindowService.id;
     this.ownName = this.multiWindowService.name;
@@ -34,12 +40,21 @@ export class AppComponent implements OnInit {
     }
     this.newName = this.ownName;
     this.windows = this.multiWindowService.getKnownWindows();
-
-    this.multiWindowService.onMessage().subscribe((value: Message) => {
-      this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
-    });
+    if (this.multiWindowService.getKnownWindows().length > 0) {
+      this.multiWindowService.onMessage().subscribe((value: Message) => {
+        if (value.senderId != this.ownId) {
+          this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
+        }
+      });
+    }
 
     this.multiWindowService.onWindows().subscribe(knownWindows => this.windows = knownWindows);
+  }
+
+  public sendTonsOfMessages(recipientId: string, message: string) {
+    for (let i = 0; i < 5000; i++) {
+      this.sendMessage(recipientId, message);
+    }
   }
 
   public sendMessage(recipientId: string, message: string) {

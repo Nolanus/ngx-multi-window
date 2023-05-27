@@ -7,8 +7,8 @@ export const NGXMW_CONFIG = new InjectionToken<MultiWindowConfig>('ngxmw_config'
 export const defaultMultiWindowConfig: MultiWindowConfig = {
   keyPrefix: 'ngxmw_',
   heartbeat: 1000,
-  newWindowScan: 5000,
+  newWindowScan: 1000,
   messageTimeout: 10000,
-  windowTimeout: 15000,
-  windowSaveStrategy: WindowSaveStrategy.NONE,
+  windowTimeout: 2000,
+  windowSaveStrategy: WindowSaveStrategy.SAVE_WHEN_EMPTY,
 };

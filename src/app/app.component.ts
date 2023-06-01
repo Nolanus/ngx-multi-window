@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { MultiWindowService, Message, KnownAppWindow } from 'ngx-multi-window';
 import { NameGeneratorService } from './providers/name-generator.service';
-import {delay} from "rxjs";
+import {delay, Subscription} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -23,14 +23,6 @@ export class AppComponent implements OnInit {
   }
 
   constructor(private multiWindowService: MultiWindowService, private nameGenerator: NameGeneratorService) {
-  }
-
-  public pause(milliseconds) {
-    var dt = new Date();
-    while ((new Date().getTime()) - dt.getTime() <= milliseconds) { /* Do nothing */ }
-  }
-
-  ngOnInit(): void {
     this.ownId = this.multiWindowService.id;
     this.ownName = this.multiWindowService.name;
     if (this.ownName.indexOf(this.ownId) >= 0) {
@@ -40,40 +32,58 @@ export class AppComponent implements OnInit {
     }
     this.newName = this.ownName;
     this.windows = this.multiWindowService.getKnownWindows();
-    if (this.multiWindowService.getKnownWindows().length > 0) {
-      this.multiWindowService.onMessage().subscribe((value: Message) => {
-        if (value.senderId != this.ownId) {
-          this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
-        }
-      });
-    }
+    this.subs.add(this.multiWindowService.onMessage().subscribe((value: Message) => {
+      if (value.senderId != this.ownId) {
+        this.pause(10);
+        console.log('Received a message from ' + value.senderId + ': ' + JSON.stringify(value.data));
+      }
+      console.log("Reading message...");
+    }));
+  }
 
+  public pause(milliseconds) {
+    var dt = new Date();
+    while ((new Date().getTime()) - dt.getTime() <= milliseconds) { /* Do nothing */ }
+  }
+
+  private subs: Subscription = new Subscription();
+
+  ngOnInit(): void {
     this.multiWindowService.onWindows().subscribe(knownWindows => this.windows = knownWindows);
   }
 
-  public sendTonsOfMessages(recipientId: string, message: string) {
-    for (let i = 0; i < 5000; i++) {
-      this.sendMessage(recipientId, message);
+  public sendMessagesToAllWindows(message: string, dontSendAgain: boolean = false) {
+    if (this.subs) {
+      this.subs.unsubscribe();
     }
-  }
-
-  public sendMessage(recipientId: string, message: string) {
-    if (recipientId === this.ownId) {
-      // Catch sending messages to itself. Trying to do so throws an error from multiWindowService.sendMessage()
-      this.logs.unshift('Can\'t send messages to itself. Select another window.');
-
-      return;
+    console.log("[DEBUG] Known Windows: ", this.multiWindowService.getKnownWindows());
+    for (const window of this.multiWindowService.getKnownWindows()) {
+      if (window.id === this.ownId) continue;
+      this.logs.unshift("Messages sent to [" + window.id + "]");
+      let successCount = 0;
+      for (let i=0; i < 100; i++) {
+        const json = {
+          type: 'UPDATE_DATA',
+          value: { dataID: (i + (dontSendAgain ? 100 : 0)) }
+        }
+        this.multiWindowService.sendMessage(window.id, 'customEvent', json).subscribe(
+          (messageId: string) => {
+            console.log('Message sent [' + window.id + ']: ' + JSON.stringify(json));
+          },
+          (error) => {
+            this.logs.unshift('Message sending failed, error: ' + error);
+          },
+          () => {
+            console.log('Message SUCCESS sent [' + window.id + ']: ' + JSON.stringify(json));
+            successCount++;
+            this.logs.unshift("Successfully sent " + successCount + " messages...");
+          });
+      }
     }
-    this.multiWindowService.sendMessage(recipientId, 'customEvent', message).subscribe(
-      (messageId: string) => {
-        this.logs.unshift('Message send, ID is ' + messageId);
-      },
-      (error) => {
-        this.logs.unshift('Message sending failed, error: ' + error);
-      },
-      () => {
-        this.logs.unshift('Message successfully delivered');
-      });
+    this.pause(2);
+    if (!dontSendAgain)
+      this.sendMessagesToAllWindows(message, true);
+    console.log("[MAIN] Completed sends...");
   }
 
   public removeLogMessage(index: number) {
@@ -85,21 +95,8 @@ export class AppComponent implements OnInit {
   }
 
   public newWindow() {
-    const newWindowData = this.multiWindowService.newWindow();
-    newWindowData.created.subscribe({
-        next: () => {
-        },
-        error: (err) => {
-          this.logs.unshift('An error occured while waiting for the new window to start consuming messages');
-        },
-        complete: () => {
-          this.logs.unshift('The new window with id ' + newWindowData.windowId + ' got created and starts consuming messages');
-        }
-      }
-    );
-    window.open('?' + newWindowData.urlString);
+    window.open('?');
   }
-
   public windowTrackerFunc(item, index) {
     return item.id;
   }

@@ -8,7 +8,7 @@ export const defaultMultiWindowConfig: MultiWindowConfig = {
   keyPrefix: 'ngxmw_',
   heartbeat: 1000,
   newWindowScan: 1000,
-  messageTimeout: 10000,
+  messageTimeout: 99999999999,
   windowTimeout: 2000,
   windowSaveStrategy: WindowSaveStrategy.SAVE_WHEN_EMPTY,
 };

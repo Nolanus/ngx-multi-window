@@ -1,20 +1,24 @@
 export enum MessageType {
-  MESSAGE,
-  MESSAGE_RECEIVED,
-  PING,
+  WINDOW_CREATED,
+  WINDOW_KILLED,
+  SPECIFIC_WINDOW,
+  SPECIFIC_LISTENER,
+  ALL_LISTENERS
+}
+
+export enum EventType {
+  CUSTOM_EVENT,
+  INTERNAL
 }
 
 export interface MessageTemplate {
-  recipientId: string;
+  recipientId?: string;
   type: MessageType;
-  event: string;
+  event: EventType;
   data?: any;
-  payload?: any;
 }
 
 export interface Message extends MessageTemplate {
-  send?: boolean;
-  messageId: string;
-  sendTime: number;
   senderId: string;
+  senderName: string;
 }

@@ -1,7 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { MultiWindowService, Message, KnownAppWindow } from 'ngx-multi-window';
-import { NameGeneratorService } from './providers/name-generator.service';
-import {delay} from "rxjs";
+import {Component, OnInit} from '@angular/core';
+import {Message, MessageType, MultiWindowService} from 'ngx-multi-window';
+import {NameGeneratorService} from './providers/name-generator.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +24,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.ownId = this.multiWindowService.id;
+    this.ownId = this.multiWindowService.getMyWindow().id;
     this.newName = this.ownName;
     this.multiWindowService.onMessage('data').subscribe((value: Message) => {
       if (value.senderId != this.ownId) {
@@ -34,8 +33,11 @@ export class AppComponent implements OnInit {
     });
   }
 
-  public sendMessage(message: string) {
-    this.multiWindowService.sendMessage("data", message);
+  public sendMessageToAll(message: string) {
+    this.multiWindowService.sendMessage({
+      data: message,
+      type: MessageType.ALL_LISTENERS
+    } as Message);
   }
 
   public removeLogMessage(index: number) {
@@ -44,9 +46,5 @@ export class AppComponent implements OnInit {
 
   public newWindow() {
     window.open('?');
-  }
-
-  public windowTrackerFunc(item, index) {
-    return item.id;
   }
 }

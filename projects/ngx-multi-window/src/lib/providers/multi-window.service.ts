@@ -1,23 +1,35 @@
-import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
-import {Location} from '@angular/common';
-import {Observable, Subject} from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {BehaviorSubject, fromEvent, Observable, Subject, Subscription, tap} from 'rxjs';
 
-import {KnownAppWindow} from '../types/window.type';
+import {KnownAppWindow, KnownWindows} from '../types/window.type';
 import {EventType, Message, MessageTemplate, MessageType} from '../types/message.type';
-import {WindowRef} from '../providers/window.provider';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MultiWindowService implements OnDestroy {
 
-  private myWindow: KnownAppWindow;
+  private myWindow: KnownAppWindow = {} as KnownAppWindow;
 
   public getMyWindow(): KnownAppWindow {
     return this.myWindow;
   }
 
-  private knownWindows: {[broadcastId: string]: KnownAppWindow[]} = {};
+  public setName(name: string): void {
+    this.myWindow.name = name;
+    this.sendMessage({
+      event: EventType.INTERNAL,
+      type: MessageType.CHANGE_NAME
+    } as MessageTemplate);
+    for (const bcId of Object.keys(this.knownBroadcasters)) {
+      for (let win of this.knownWindows[bcId]) {
+        if (win.id == this.myWindow.id)
+          win.name = name;
+      }
+    }
+  }
+
+  private knownWindows: KnownWindows = {};
 
   private knownBroadcasters: {[broadcastId: string]: BroadcastChannel} = {};
 
@@ -31,7 +43,10 @@ export class MultiWindowService implements OnDestroy {
   /**
    * A subject to subscribe to in order to get notified about all known windows
    */
-  //private windowSubject: Subject<KnownAppWindow[]> = new BehaviorSubject<KnownAppWindow[]>(this.knownWindows);
+  private windowSubject: Subject<KnownWindows> = new BehaviorSubject<KnownWindows>(this.knownWindows);
+
+  private windowUnload$ = fromEvent(window, 'unload').pipe(tap(() => this.destroy()));
+  private unloadSub: Subscription = new Subscription();
 
   private generateId(): string {
     return new Date().getTime().toString(36).substr(-4) + Math.random().toString(36).substr(2, 9);
@@ -40,11 +55,17 @@ export class MultiWindowService implements OnDestroy {
   constructor() {
     this.myWindow.id = this.generateId();
     this.myWindow.name = window.name;
+    this.myWindow.self = true;
+    this.unloadSub.add(this.windowUnload$.subscribe());
   }
 
-  public ngOnDestroy() {
+  private destroy() {
     this.handleServiceDestroyed();
     this.closeAllListeners();
+  }
+
+  ngOnDestroy() {
+    this.unloadSub.unsubscribe();
   }
 
   public getKnownBroadcasters(): BroadcastChannel[] {
@@ -74,28 +95,67 @@ export class MultiWindowService implements OnDestroy {
 
   public listen(broadcastChannelId: string): MultiWindowService {
     const bc = this.getBroadcastChannel(broadcastChannelId);
+    if (this.knownWindows[bc.name] == undefined)
+      this.knownWindows[bc.name] = [];
+    this.knownWindows[bc.name].push({
+      id: this.myWindow.id,
+      name: this.myWindow.name,
+      self: true
+    } as KnownAppWindow);
     if (this.knownListeners[bc.name] == undefined) {
       bc.onmessage = (message: any) => {
-        const msg: Message = message as Message;
-        if (msg.type == MessageType.WINDOW_KILLED) {
-          // We want to handle the window killed here and make sure we remove it as a known window
-          this.knownWindows[bc.name] = this.knownWindows[bc.name].filter((win) => {return win.id != message.senderId});
-          return;
-        } else
-          if (msg.type == MessageType.WINDOW_CREATED) {
-            this.knownWindows[bc.name].push({name: message.senderName, id: message.senderId} as KnownAppWindow);
-            return;
-          }
-        this.messageSubjects[bc.name].next(message as Message);
+        const msg: Message = message.data as Message;
+        switch (msg.type) {
+          case MessageType.WINDOW_KILLED:
+            // We want to handle the window killed here and make sure we remove it as a known window
+            this.knownWindows[bc.name] = this.knownWindows[bc.name].filter((win) => {
+              return win.id != msg.senderId
+            });
+            this.windowSubject.next(this.knownWindows);
+            break;
+          case MessageType.WINDOW_CREATED:
+            this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
+            this.windowSubject.next(this.knownWindows);
+            break;
+          case MessageType.REQUEST_ALL_WINDOWS:
+            this.sendMessage({
+              type: MessageType.REPORT_WINDOW,
+              event: EventType.INTERNAL,
+              recipientId: msg.senderId
+            } as Message, bc.name);
+            break;
+          case MessageType.REPORT_WINDOW:
+            if (msg.recipientId == this.myWindow.id) {
+              // They requested all the windows to report, give them the windows
+              this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
+              this.windowSubject.next(this.knownWindows);
+            }
+            break;
+          case MessageType.CHANGE_NAME:
+            for (let win of this.knownWindows[bc.name]) {
+              if (msg.senderId == win.id)
+                win.name = msg.senderName;
+            }
+            break;
+          case MessageType.SPECIFIC_WINDOW:
+            if (msg.recipientId == this.myWindow.id)
+              this.messageSubjects[bc.name].next(msg);
+            break;
+          case MessageType.ALL_LISTENERS:
+            this.messageSubjects[bc.name].next(msg);
+            break;
+        }
       }
     }
     // When we register a new listener, we want to tell all the windows listening that we have a new known window to add to their list...
     this.sendMessage({
-      type: MessageType.WINDOW_KILLED,
-      event: EventType.INTERNAL,
-      senderId: this.myWindow.id,
-      senderName: window.name
-    } as Message)
+      type: MessageType.WINDOW_CREATED,
+      event: EventType.INTERNAL
+    } as MessageTemplate);
+    this.sendMessage({
+      type: MessageType.REQUEST_ALL_WINDOWS,
+      event: EventType.INTERNAL
+    } as MessageTemplate);
     return this;
   }
 
@@ -116,7 +176,7 @@ export class MultiWindowService implements OnDestroy {
       type: MessageType.WINDOW_KILLED,
       event: EventType.INTERNAL,
       senderId: this.myWindow.id,
-      senderName: window.name
+      senderName: this.myWindow.name
     } as Message);
     this.closeAllListeners();
   }
@@ -124,6 +184,24 @@ export class MultiWindowService implements OnDestroy {
   public onMessage(broadcastChannelId: string): Observable<Message> {
     return this.messageSubjects[broadcastChannelId].asObservable();
   }
+
+  /**
+   * An observable to subscribe to. It emits the array of known windows
+   * whenever it is read again from the localstorage.
+   *
+   * This Observable emits the last list of known windows on subscription
+   * (refer to rxjs BehaviorSubject).
+   *
+   * Use {@link getKnownWindows} to get the current list of
+   * known windows or if you only need a snapshot of that list.
+   *
+   * @see {@link MultiWindowConfig#newWindowScan}
+   * @returns
+   */
+  public onWindows(): Observable<KnownWindows> {
+    return this.windowSubject.asObservable();
+  }
+
 
   /**
    * An observable to subscribe to. It emits the array of known windows
@@ -159,15 +237,13 @@ export class MultiWindowService implements OnDestroy {
     msg.senderName = this.myWindow.name;
     msg.senderId = this.myWindow.id;
     switch (msg.type) {
-      case MessageType.ALL_LISTENERS:
-      case MessageType.SPECIFIC_WINDOW:
-        for (const bc of this.getKnownBroadcasters()) {
-          bc.postMessage(msg);
-        }
-        break;
       case MessageType.SPECIFIC_LISTENER:
         this.getBroadcastChannel(broadcastId).postMessage(msg);
         break;
+      default:
+        for (const bc of this.getKnownBroadcasters()) {
+          bc.postMessage(msg);
+        }
     }
   }
 }

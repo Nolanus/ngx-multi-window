@@ -64,7 +64,18 @@ export class AppComponent implements OnInit, OnDestroy {
     } as Message);
   }
 
-  public sendMessage(message: string, recipientId: string) {}
+  public sendMessage(message: string, recipientId: string) {
+    if (recipientId != 'ALL') {
+      this.multiWindowService.sendMessage({
+        data: message,
+        type: MessageType.SPECIFIC_WINDOW,
+        event: EventType.CUSTOM_EVENT,
+        recipientId: recipientId
+      } as Message);
+    } else {
+      this.sendMessageToAll(message);
+    }
+  }
 
   public removeLogMessage(index: number) {
     this.logs.splice(index, 1);

@@ -2,7 +2,13 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, fromEvent, Observable, Subject, Subscription, tap} from 'rxjs';
 
 import {KnownAppWindow, KnownWindows} from '../types/window.type';
-import {EventType, Message, MessageTemplate, MessageType} from '../types/message.type';
+import {
+  InternalMessage, InternalMessageTemplate,
+  InternalMessageType,
+  Message,
+  MessageTemplate,
+  MessageType
+} from '../types/message.type';
 
 @Injectable({
   providedIn: 'root',
@@ -17,10 +23,10 @@ export class MultiWindowService implements OnDestroy {
 
   public setName(name: string): void {
     this.myWindow.name = name;
-    this.sendMessage({
-      event: EventType.INTERNAL,
-      type: MessageType.CHANGE_NAME
-    } as MessageTemplate);
+    this.sendInternalMessage({
+      type: InternalMessageType.CHANGE_NAME,
+      isInternal: true
+    } as InternalMessageTemplate);
     for (const bcId of Object.keys(this.knownBroadcasters)) {
       for (let win of this.knownWindows[bcId]) {
         if (win.id == this.myWindow.id)
@@ -104,39 +110,46 @@ export class MultiWindowService implements OnDestroy {
     } as KnownAppWindow);
     if (this.knownListeners[bc.name] == undefined) {
       bc.onmessage = (message: any) => {
-        const msg: Message = message.data as Message;
-        switch (msg.type) {
-          case MessageType.WINDOW_KILLED:
-            // We want to handle the window killed here and make sure we remove it as a known window
-            this.knownWindows[bc.name] = this.knownWindows[bc.name].filter((win) => {
-              return win.id != msg.senderId
-            });
-            this.windowSubject.next(this.knownWindows);
-            break;
-          case MessageType.WINDOW_CREATED:
-            this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
-            this.windowSubject.next(this.knownWindows);
-            break;
-          case MessageType.REQUEST_ALL_WINDOWS:
-            this.sendMessage({
-              type: MessageType.REPORT_WINDOW,
-              event: EventType.INTERNAL,
-              recipientId: msg.senderId
-            } as Message, bc.name);
-            break;
-          case MessageType.REPORT_WINDOW:
-            if (msg.recipientId == this.myWindow.id) {
-              // They requested all the windows to report, give them the windows
+        let msg = message.data;
+        if (msg.isInternal != undefined) {
+          msg = message.data as InternalMessage;
+          switch (msg.type) {
+            case InternalMessageType.WINDOW_KILLED:
+              // We want to handle the window killed here and make sure we remove it as a known window
+              this.knownWindows[bc.name] = this.knownWindows[bc.name].filter((win) => {
+                return win.id != msg.senderId
+              });
+              this.windowSubject.next(this.knownWindows);
+              break;
+            case InternalMessageType.WINDOW_CREATED:
               this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
               this.windowSubject.next(this.knownWindows);
-            }
-            break;
-          case MessageType.CHANGE_NAME:
-            for (let win of this.knownWindows[bc.name]) {
-              if (msg.senderId == win.id)
-                win.name = msg.senderName;
-            }
-            break;
+              break;
+            case InternalMessageType.REQUEST_ALL_WINDOWS:
+              this.sendInternalMessage({
+                type: InternalMessageType.REPORT_WINDOW,
+                isInternal: true,
+                recipientId: msg.senderId
+              } as InternalMessageTemplate, bc.name);
+              break;
+            case InternalMessageType.REPORT_WINDOW:
+              if (msg.recipientId == this.myWindow.id) {
+                // They requested all the windows to report, give them the windows
+                this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
+                this.windowSubject.next(this.knownWindows);
+              }
+              break;
+            case InternalMessageType.CHANGE_NAME:
+              for (let win of this.knownWindows[bc.name]) {
+                if (msg.senderId == win.id)
+                  win.name = msg.senderName;
+              }
+              break;
+          }
+          return;
+        }
+        msg = message.data as Message;
+        switch (msg.type) {
           case MessageType.SPECIFIC_WINDOW:
             if (msg.recipientId == this.myWindow.id)
               this.messageSubjects[bc.name].next(msg);
@@ -148,14 +161,14 @@ export class MultiWindowService implements OnDestroy {
       }
     }
     // When we register a new listener, we want to tell all the windows listening that we have a new known window to add to their list...
-    this.sendMessage({
-      type: MessageType.WINDOW_CREATED,
-      event: EventType.INTERNAL
-    } as MessageTemplate);
-    this.sendMessage({
-      type: MessageType.REQUEST_ALL_WINDOWS,
-      event: EventType.INTERNAL
-    } as MessageTemplate);
+    this.sendInternalMessage({
+      type: InternalMessageType.WINDOW_CREATED,
+      isInternal: true
+    } as InternalMessageTemplate);
+    this.sendInternalMessage({
+      type: InternalMessageType.REQUEST_ALL_WINDOWS,
+      isInternal: true
+    } as InternalMessageTemplate);
     return this;
   }
 
@@ -172,12 +185,10 @@ export class MultiWindowService implements OnDestroy {
     this.knownListeners = [];
   }
   private handleServiceDestroyed() {
-    this.sendMessage({
-      type: MessageType.WINDOW_KILLED,
-      event: EventType.INTERNAL,
-      senderId: this.myWindow.id,
-      senderName: this.myWindow.name
-    } as Message);
+    this.sendInternalMessage({
+      type: InternalMessageType.WINDOW_KILLED,
+      isInternal: true
+    } as InternalMessageTemplate);
     this.closeAllListeners();
   }
 
@@ -232,6 +243,20 @@ export class MultiWindowService implements OnDestroy {
     return this.knownWindows;
   }
 
+  private sendInternalMessage(message: InternalMessageTemplate, broadcastId?: string) {
+    let msg: InternalMessage = message as InternalMessage;
+    msg.senderName = this.myWindow.name;
+    msg.senderId = this.myWindow.id;
+    switch (msg.type) {
+      case InternalMessageType.SPECIFIC_LISTENER:
+        this.getBroadcastChannel(broadcastId).postMessage(msg);
+        break;
+      default:
+        for (const bc of this.getKnownBroadcasters()) {
+          bc.postMessage(msg);
+        }
+    }
+  }
   public sendMessage(message: MessageTemplate, broadcastId?: string) {
     let msg: Message = message as Message;
     msg.senderName = this.myWindow.name;

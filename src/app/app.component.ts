@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {EventType, KnownWindows, Message, MessageType, MultiWindowService} from 'ngx-multi-window';
+import {KnownWindows, Message, MessageType, MultiWindowService} from 'ngx-multi-window';
 import {Subscription} from "rxjs";
 import {NameGeneratorService} from "./providers/name-generator.service";
 
@@ -37,9 +37,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ownName = this.nameGenerator.getRandomFakeName();
     this.multiWindowService.setName(this.ownName);
     this.newName = this.ownName;
-    this.multiWindowService.listen('data');
-    this.subs.add(this.multiWindowService.onMessage('data').subscribe((value: Message) => {
-      console.log("[DEBUG] Received message:", value);
+    this.multiWindowService.listen('channel');
+    this.subs.add(this.multiWindowService.onMessage('channel').subscribe((value: Message) => {
       if (value.senderId != this.ownId) {
         this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
         this.changeDetectorRef.detectChanges();
@@ -60,7 +59,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.multiWindowService.sendMessage({
       data: message,
       type: MessageType.ALL_LISTENERS,
-      event: EventType.CUSTOM_EVENT
     } as Message);
   }
 
@@ -69,7 +67,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.multiWindowService.sendMessage({
         data: message,
         type: MessageType.SPECIFIC_WINDOW,
-        event: EventType.CUSTOM_EVENT,
         recipientId: recipientId
       } as Message);
     } else {

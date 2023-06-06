@@ -61,20 +61,23 @@
       <p>
         <button class="btn btn-secondary" (click)="newWindow()">Open a new Window</button>
       </p>
-      <div class="list-group">
-        <a *ngFor="let window of windows;" (click)="recipientInput.value = window.id"
-           [class.list-group-item-warning]="window.stalled" [class.list-group-item-primary]="window.self"
+      <div class="list-group" *ngFor="let bcItem of windows | keyvalue">
+        <a (click)="recipientInput.value = 'ALL'" class="list-group-item list-group-item-action flex-column align-items-start">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">ALL</h5>
+            <small>ALL WINDOWS</small>
+          </div>
+        </a>
+        <a *ngFor="let win of bcItem.value" (click)="recipientInput.value = win.id"
+           [class.list-group-item-primary]="win.self"
            class="list-group-item list-group-item-action flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ window.name }}</h5>
-            <small>ID: {{ window.id }}</small>
+            <h5 class="mb-1">{{ win.name }}</h5>
+            <small>ID: {{ win.id }}</small>
           </div>
           <small class="mb-1">
-            <span *ngIf="window.self">Current window</span>
-            <span *ngIf="!window.self">Other window</span>,
-            Status:
-            <span *ngIf="window.stalled">Stalled</span>
-            <span *ngIf="!window.stalled">Active</span>
+            <span *ngIf="win.self">Current window</span>
+            <span *ngIf="!win.self">Other window</span>
           </small>
         </a>
       </div>
@@ -85,7 +88,7 @@
       <form>
         <div class="form-group">
           <label for="recipientInput">Recipient Window Id</label>
-          <input type="text" class="form-control" id="recipientInput" #recipientInput required readonly>
+          <input type="text" class="form-control" id="recipientInput" #recipientInput required readonly value="ALL">
           <small id="recipientInputHelp" class="form-text text-muted">Select a window from the list of known windows
           </small>
         </div>
@@ -94,7 +97,7 @@
           <input type="text" class="form-control" id="messageInput" #messageInput required>
         </div>
         <button type="submit" class="btn btn-primary"
-                (click)="sendTonsOfMessages(recipientInput.value, messageInput.value); messageInput.value = ''">Submit
+                (click)="sendMessage(messageInput.value, recipientInput.value); messageInput.value = ''">Submit
         </button>
       </form>
     </div>

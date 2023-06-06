@@ -1,9 +1,8 @@
-# ngx-multi-window [![npm version](https://img.shields.io/npm/v/ngx-multi-window.svg?style=flat)](https://www.npmjs.com/package/ngx-multi-window) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+# ngx-multi-window-communication [![npm version](https://img.shields.io/npm/v/ngx-multi-window.svg?style=flat)](https://www.npmjs.com/package/ngx-multi-window) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
-Pull-based cross-window communication for multi-window angular applications
+Cross-window communication for multi-window angular applications
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b175dcd8585a42bdbdb9c1ee2a313b3b)](https://www.codacy.com/app/sebastian-fuss/ngx-multi-window?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Nolanus/ngx-multi-window&amp;utm_campaign=Badge_Grade)
 
 ## Features
 

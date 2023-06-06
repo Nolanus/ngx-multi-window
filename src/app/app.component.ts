@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {KnownWindows, Message, MessageType, MultiWindowService} from 'ngx-multi-window';
+import {KnownWindows, Message, MessageTemplate, MessageType, MultiWindowService} from 'ngx-multi-window';
 import {Subscription} from "rxjs";
 import {NameGeneratorService} from "./providers/name-generator.service";
 
@@ -59,7 +59,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.multiWindowService.sendMessage({
       data: message,
       type: MessageType.ALL_LISTENERS,
-    } as Message);
+    } as MessageTemplate);
   }
 
   public sendMessage(message: string, recipientId: string) {
@@ -68,7 +68,7 @@ export class AppComponent implements OnInit, OnDestroy {
         data: message,
         type: MessageType.SPECIFIC_WINDOW,
         recipientId: recipientId
-      } as Message);
+      } as MessageTemplate);
     } else {
       this.sendMessageToAll(message);
     }

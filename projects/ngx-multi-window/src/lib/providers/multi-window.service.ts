@@ -213,26 +213,6 @@ export class MultiWindowService implements OnDestroy {
     return this.windowSubject.asObservable();
   }
 
-
-  /**
-   * An observable to subscribe to. It emits the array of known windows
-   * whenever it is read again from the localstorage.
-   *
-   * This Observable emits the last list of known windows on subscription
-   * (refer to rxjs BehaviorSubject).
-   *
-   * Use {@link getKnownWindows} to get the current list of
-   * known windows or if you only need a snapshot of that list.
-   *
-   * @see {@link MultiWindowConfig#newWindowScan}
-   * @returns
-   */
-  /** /
-  public onWindows(): Observable<KnownAppWindow[]> {
-    return this.windowSubject.asObservable();
-  }
-  /* */
-
   /**
    * Get the latest list of known windows.
    *

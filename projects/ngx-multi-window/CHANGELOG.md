@@ -1,3 +1,8 @@
+## 0.6.1 (2023-07-18)
+
+-   Requires at least angular v15 and allows newer versions (tested with Angular 16.1.5)
+-   Removed dev dependency "tsickle" as it is no longer compatible
+
 ## 0.6.0 (2022-12-27)
 
 - Requires angular v15

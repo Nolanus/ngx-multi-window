@@ -22,6 +22,7 @@ For older angular versions you may install previous versions of this library:
 
 | ngx-multi-window version | compatible angular version |
 |--------------------------|----------------------------|
+| `0.6.1`                  | `>= 15`                    |
 | `0.6`                    | `15`                       |
 | `0.5`                    | `14`                       |
 | `0.4.1`                  | `8 - 13`                   |

@@ -1,56 +1,45 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {BehaviorSubject, fromEvent, Observable, Subject, Subscription, tap} from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, fromEvent, map, Observable, Subject, Subscription, tap } from 'rxjs';
 
-import {KnownAppWindow, KnownWindows} from '../types/window.type';
-import {
-  InternalMessage, InternalMessageTemplate,
-  InternalMessageType,
-  Message,
-  MessageTemplate,
-  MessageType
-} from '../types/message.type';
+import { AppWindow, MessageRecipients } from '../types/window.type';
+import { InternalMessage, InternalMessageType, MultiWindowMessage } from '../types/message.type';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MultiWindowService implements OnDestroy {
-  private myWindow: KnownAppWindow = {} as KnownAppWindow;
+  private readonly appWindow: AppWindow;
 
-  public getMyWindow(): KnownAppWindow {
-    return this.myWindow;
+  private static readonly InternalChannelName = '_ngxmw_internal';
+
+  public getMyWindow(): Readonly<AppWindow> {
+    return this.appWindow;
   }
-
-  public setName(name: string): void {
-    this.myWindow.name = name;
-    this.sendInternalMessage({
-      type: InternalMessageType.CHANGE_NAME,
-      isInternal: true
-    } as InternalMessageTemplate);
-    for (const bcId of Object.keys(this.knownBroadcasters)) {
-      for (let win of this.knownWindows[bcId]) {
-        if (win.id == this.myWindow.id)
-          win.name = name;
-      }
-    }
-  }
-
-  private knownWindows: KnownWindows = {};
-
-  private knownBroadcasters: {[broadcastId: string]: BroadcastChannel} = {};
-
-  private knownListeners: string[] = [];
 
   /**
-   * A subject to subscribe to in order to get notified about messages sent to this window
+   * Map of known app windows
+   * @private
    */
-  private messageSubjects: Subject<Message>[] = [];
+  private windows: { [windowId: string]: AppWindow } = {};
+
+  /**
+   * Map of channel names the current app has subscribed to.
+   * The channel name is mapped to the BroadcastChannel object and subject.
+   * @private
+   */
+  private subscriptions: { [channelName: string]: { broadcastChannel: BroadcastChannel, subject: Subject<MultiWindowMessage> } } = {};
+
+  public setName(name: string): void {
+    this.appWindow.name = name;
+    this.sendWindowUpdateMessage();
+  }
 
   /**
    * A subject to subscribe to in order to get notified about all known windows
    */
-  private windowSubject: Subject<KnownWindows> = new BehaviorSubject<KnownWindows>(this.knownWindows);
+  private windowSubject: Subject<AppWindow[]> = new BehaviorSubject<AppWindow[]>(Object.values(this.windows));
 
-  private windowUnload$ = fromEvent(window, 'unload').pipe(tap(() => this.destroy()));
+  private windowUnload$ = fromEvent(window, 'beforeunload').pipe(tap(() => this.ngOnDestroy()));
   private unloadSub: Subscription = new Subscription();
 
   private generateId(): string {
@@ -58,196 +47,120 @@ export class MultiWindowService implements OnDestroy {
   }
 
   constructor() {
-    this.myWindow.id = this.generateId();
-    this.myWindow.name = window.name;
-    this.myWindow.self = true;
+    this.appWindow = {
+      id: this.generateId(),
+      name: window.name,
+      channels: [],
+    };
+    this.subscribe<InternalMessage>(MultiWindowService.InternalChannelName);
+    this.subscriptions[MultiWindowService.InternalChannelName].subject.subscribe(_ => this.handleInternalMessage(_));
+    this.sendMessage<InternalMessage>({
+      type: InternalMessageType.WINDOW_CREATED,
+      data: this.appWindow,
+    }, null, MultiWindowService.InternalChannelName);
     this.unloadSub.add(this.windowUnload$.subscribe());
   }
 
-  private destroy() {
-    this.handleServiceDestroyed();
-    this.closeAllListeners();
+  private handleInternalMessage(message: MultiWindowMessage<InternalMessage>) {
+    switch (message.data?.type) {
+      case InternalMessageType.WINDOW_CREATED:
+        this.windows[message.sender] = message.data?.data;
+        this.sendWindowUpdateMessage(message.sender);
+        break;
+      case InternalMessageType.WINDOW_UPDATE:
+        this.windows[message.sender] = message.data?.data;
+        break;
+      case InternalMessageType.WINDOW_KILLED:
+        delete this.windows[message.sender];
+        break;
+    }
+    this.windowSubject.next(Object.values(this.windows));
+  }
+
+  private sendWindowUpdateMessage(recipients: MessageRecipients = null) {
+    this.sendMessage<InternalMessage>({
+      type: InternalMessageType.WINDOW_UPDATE,
+      data: this.appWindow,
+    }, recipients, MultiWindowService.InternalChannelName);
+  }
+
+  private subscribe<T = any>(channelName: string): boolean {
+    if (!this.subscriptions[channelName]?.broadcastChannel) {
+      this.subscriptions[channelName] = {
+        broadcastChannel: new BroadcastChannel(channelName),
+        subject: new Subject<MultiWindowMessage<T>>(),
+      };
+      this.subscriptions[channelName].broadcastChannel.onmessage = (messageEvent) => {
+        if (messageEvent.data.recipients?.includes(this.appWindow.id) === false) {
+          return;
+        }
+        this.subscriptions[channelName].subject.next({
+          sender: messageEvent.data.sender,
+          recipients: messageEvent.data.recipients,
+          data: messageEvent.data.data,
+        });
+      };
+      return true;
+    }
+    return false;
+  }
+
+  public onMessage<T = any>(channelName: string = 'default'): Observable<MultiWindowMessage<T>> {
+    if (this.subscribe(channelName)) {
+      this.appWindow.channels = Object.keys(this.subscriptions);
+      this.sendWindowUpdateMessage();
+    }
+    return this.subscriptions[channelName].subject.asObservable();
+  }
+
+  public sendMessage<T = any>(data: T, recipients: MessageRecipients = null, channelName: string = 'default', autoSubscribe: boolean = false) {
+    if (!this.subscriptions[channelName].broadcastChannel) {
+      if (!autoSubscribe) {
+        throw new Error('Cannot send message to BroadcastChannel "' + channelName + '" not subscribed to');
+      }
+      this.onMessage(channelName);
+    }
+    this.subscriptions[channelName].broadcastChannel.postMessage({
+      sender: this.appWindow.id,
+      recipients: recipients === null ? null : (Array.isArray(recipients) ? recipients : [recipients])
+        .map(recipient => typeof recipient === 'string' ? recipient : recipient.id)
+        .filter(recipientId => recipientId !== this.appWindow.id),
+      data,
+    });
+  }
+
+  public unsubscribe(channelName: string) {
+    return channelName !== MultiWindowService.InternalChannelName && this.doUnsubscribe(channelName);
+  }
+
+  private doUnsubscribe(channelName: string) {
+    if (this.subscriptions[channelName]?.broadcastChannel) {
+      this.subscriptions[channelName].broadcastChannel.close();
+      this.subscriptions[channelName].subject.complete();
+      delete this.subscriptions[channelName];
+      this.appWindow.channels = Object.keys(this.subscriptions);
+      this.sendWindowUpdateMessage();
+      return true;
+    }
+    return false;
   }
 
   ngOnDestroy() {
+    this.sendMessage<InternalMessage>({ type: InternalMessageType.WINDOW_KILLED }, null, MultiWindowService.InternalChannelName);
     this.unloadSub.unsubscribe();
   }
 
-  public getKnownBroadcasters(): BroadcastChannel[] {
-    let knownBroadcasters: BroadcastChannel[] = [];
-    for (const bcId of Object.keys(this.knownBroadcasters)) {
-      knownBroadcasters.push(this.knownBroadcasters[bcId]);
-    }
-    return knownBroadcasters;
-  }
-
   /**
-   * An observable to subscribe to. It emits all messages the current window receives.
-   * After a message has been emitted by this observable it is marked as read, so the sending window
-   * gets informed about successful delivery.
-   */
-  public getBroadcastChannel(broadcastChannelId: string): BroadcastChannel {
-    for (const bcId of Object.keys(this.knownBroadcasters)) {
-      const bc = this.knownBroadcasters[bcId];
-      if (bcId == broadcastChannelId)
-        return bc;
-    }
-    const bc = new BroadcastChannel(broadcastChannelId);
-    this.knownBroadcasters[bc.name] = bc;
-    this.messageSubjects[bc.name as any] = new Subject<Message>();
-    return bc;
-  }
-
-  public listen(broadcastChannelId: string): MultiWindowService {
-    const bc = this.getBroadcastChannel(broadcastChannelId);
-    if (this.knownWindows[bc.name] == undefined)
-      this.knownWindows[bc.name] = [];
-    this.knownWindows[bc.name].push({
-      id: this.myWindow.id,
-      name: this.myWindow.name,
-      self: true
-    } as KnownAppWindow);
-    if (this.knownListeners[bc.name as any] == undefined) {
-      bc.onmessage = (message: any) => {
-        let msg = message.data;
-        if (msg.isInternal != undefined) {
-          msg = message.data as InternalMessage;
-          switch (msg.type) {
-            case InternalMessageType.WINDOW_KILLED:
-              // We want to handle the window killed here and make sure we remove it as a known window
-              this.knownWindows[bc.name] = this.knownWindows[bc.name].filter((win) => {
-                return win.id != msg.senderId
-              });
-              this.windowSubject.next(this.knownWindows);
-              break;
-            case InternalMessageType.WINDOW_CREATED:
-              this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
-              this.windowSubject.next(this.knownWindows);
-              break;
-            case InternalMessageType.REQUEST_ALL_WINDOWS:
-              this.sendInternalMessage({
-                type: InternalMessageType.REPORT_WINDOW,
-                isInternal: true,
-                recipientId: msg.senderId
-              } as InternalMessageTemplate, bc.name);
-              break;
-            case InternalMessageType.REPORT_WINDOW:
-              if (msg.recipientId == this.myWindow.id) {
-                // They requested all the windows to report, give them the windows
-                this.knownWindows[bc.name].push({name: msg.senderName, id: msg.senderId} as KnownAppWindow);
-                this.windowSubject.next(this.knownWindows);
-              }
-              break;
-            case InternalMessageType.CHANGE_NAME:
-              for (let win of this.knownWindows[bc.name]) {
-                if (msg.senderId == win.id)
-                  win.name = msg.senderName;
-              }
-              break;
-          }
-          return;
-        }
-        msg = message.data as Message;
-        switch (msg.type) {
-          case MessageType.SPECIFIC_WINDOW:
-            if (msg.recipientId == this.myWindow.id)
-              this.messageSubjects[bc.name as any].next(msg);
-            break;
-          case MessageType.ALL_LISTENERS:
-            this.messageSubjects[bc.name as any].next(msg);
-            break;
-        }
-      }
-    }
-    // When we register a new listener, we want to tell all the windows listening that we have a new known window to add to their list...
-    this.sendInternalMessage({
-      type: InternalMessageType.WINDOW_CREATED,
-      isInternal: true
-    } as InternalMessageTemplate);
-    this.sendInternalMessage({
-      type: InternalMessageType.REQUEST_ALL_WINDOWS,
-      isInternal: true
-    } as InternalMessageTemplate);
-    return this;
-  }
-
-  public closeListener(broadcastChannelId: string) {
-    if (this.knownListeners[broadcastChannelId as any] != undefined) {
-      this.getBroadcastChannel(broadcastChannelId).close();
-      delete this.knownListeners[broadcastChannelId as any];
-    }
-  }
-  public closeAllListeners() {
-    for (const bcId of this.knownListeners) {
-      this.getBroadcastChannel(bcId).close();
-    }
-    this.knownListeners = [];
-  }
-  private handleServiceDestroyed() {
-    this.sendInternalMessage({
-      type: InternalMessageType.WINDOW_KILLED,
-      isInternal: true
-    } as InternalMessageTemplate);
-    this.closeAllListeners();
-  }
-
-  public onMessage(broadcastChannelId: string): Observable<Message> {
-    return this.messageSubjects[broadcastChannelId as any].asObservable();
-  }
-
-  /**
-   * An observable to subscribe to. It emits the array of known windows
-   * whenever it is read again from the localstorage.
+   * An observable to subscribe to. It emits the array of known AppWindows.
    *
    * This Observable emits the last list of known windows on subscription
    * (refer to rxjs BehaviorSubject).
-   *
-   * Use {@link getKnownWindows} to get the current list of
-   * known windows or if you only need a snapshot of that list.
-   *
-   * @see {@link MultiWindowConfig#newWindowScan}
-   * @returns
    */
-  public onWindows(): Observable<KnownWindows> {
+  public onWindows(): Observable<AppWindow[]> {
     return this.windowSubject.asObservable();
   }
 
-  /**
-   * Get the latest list of known windows.
-   *
-   * Use {@link onWindows} to get an observable which emits
-   * whenever is updated.
-   */
-  public getKnownWindows() {
-    return this.knownWindows;
-  }
-
-  private sendInternalMessage(message: InternalMessageTemplate, broadcastId?: string) {
-    let msg: InternalMessage = message as InternalMessage;
-    msg.senderName = this.myWindow.name;
-    msg.senderId = this.myWindow.id;
-    switch (msg.type) {
-      case InternalMessageType.SPECIFIC_LISTENER:
-        this.getBroadcastChannel(broadcastId || '').postMessage(msg);
-        break;
-      default:
-        for (const bc of this.getKnownBroadcasters()) {
-          bc.postMessage(msg);
-        }
-    }
-  }
-  public sendMessage(message: MessageTemplate, broadcastId?: string) {
-    let msg: Message = message as Message;
-    msg.senderName = this.myWindow.name;
-    msg.senderId = this.myWindow.id;
-    switch (msg.type) {
-      case MessageType.SPECIFIC_LISTENER:
-        this.getBroadcastChannel(broadcastId || '').postMessage(msg);
-        break;
-      default:
-        for (const bc of this.getKnownBroadcasters()) {
-          bc.postMessage(msg);
-        }
-    }
+  public onChannels(): Observable<string[]> {
+    return this.windowSubject.pipe(map(windows => [...new Set(windows.map(window => window.channels).flat())]));
   }
 }

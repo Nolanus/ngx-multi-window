@@ -1,9 +1,9 @@
-import {ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {Subscription} from "rxjs";
-import {NameGeneratorService} from "./providers/name-generator.service";
-import { KnownWindows } from "../../projects/ngx-multi-window/src/lib/types/window.type";
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from "rxjs";
+import { NameGeneratorService } from "./providers/name-generator.service";
+import { AppWindow } from "../../projects/ngx-multi-window/src/lib/types/window.type";
 import { MultiWindowService } from "../../projects/ngx-multi-window/src/lib/providers/multi-window.service";
-import { Message, MessageTemplate, MessageType } from "../../projects/ngx-multi-window/src/lib/types/message.type";
+import { MultiWindowMessage } from "../../projects/ngx-multi-window/src/lib/types/message.type";
 
 @Component({
   selector: 'app-root',
@@ -18,11 +18,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   newName: string = "";
 
-  windows: KnownWindows = {};
+  windows: AppWindow[] = [];
 
   private subs: Subscription = new Subscription();
 
-  constructor(private multiWindowService: MultiWindowService, private changeDetectorRef: ChangeDetectorRef, private nameGenerator: NameGeneratorService) {}
+  constructor(private multiWindowService: MultiWindowService, private changeDetectorRef: ChangeDetectorRef, private nameGenerator: NameGeneratorService) {
+  }
 
   public changeName() {
     this.ownName = this.newName;
@@ -34,16 +35,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ownName = this.nameGenerator.getRandomFakeName();
     this.multiWindowService.setName(this.ownName);
     this.newName = this.ownName;
-    this.multiWindowService.listen('channel');
-    this.subs.add(this.multiWindowService.onMessage('channel').subscribe((value: Message) => {
-      if (value.senderId != this.ownId) {
-        this.logs.unshift('Received a message from ' + value.senderId + ': ' + value.data);
+    //this.multiWindowService.subscribe();
+    this.subs.add(this.multiWindowService.onMessage().subscribe((value: MultiWindowMessage) => {
+      if (value.sender != this.ownId) {
+        this.logs.unshift('Received a message from ' + value.sender + ': ' + value.data);
         this.changeDetectorRef.detectChanges();
       }
     }));
-    this.windows = this.multiWindowService.getKnownWindows();
-    this.subs.add(this.multiWindowService.onWindows().subscribe((knownWindows) => {
-      this.windows = knownWindows;
+    this.subs.add(this.multiWindowService.onWindows().subscribe((appWindows) => {
+      this.windows = appWindows;
       this.changeDetectorRef.detectChanges();
     }));
   }
@@ -52,23 +52,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  public sendMessageToAll(message: string) {
-    this.multiWindowService.sendMessage({
-      data: message,
-      type: MessageType.ALL_LISTENERS,
-    } as MessageTemplate);
-  }
-
   public sendMessage(message: string, recipientId: string) {
-    if (recipientId != 'ALL') {
-      this.multiWindowService.sendMessage({
-        data: message,
-        type: MessageType.SPECIFIC_WINDOW,
-        recipientId: recipientId
-      } as MessageTemplate);
-    } else {
-      this.sendMessageToAll(message);
-    }
+    this.multiWindowService.sendMessage(message, recipientId || null);
   }
 
   public removeLogMessage(index: number) {

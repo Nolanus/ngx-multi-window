@@ -1,10 +1,7 @@
-export interface KnownAppWindow {
+export interface AppWindow {
   id: string;
   name: string;
-  self: boolean;
+  channels: string[];
 }
 
-
-export interface KnownWindows {
-  [broadcastId: string]: KnownAppWindow[];
-}
+export type MessageRecipients = null | string | string[] | AppWindow | AppWindow[];

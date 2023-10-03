@@ -61,24 +61,20 @@
       <p>
         <button class="btn btn-secondary" (click)="newWindow()">Open a new Window</button>
       </p>
-      <div class="list-group" *ngFor="let bcItem of windows | keyvalue">
-        <a (click)="recipientInput.value = 'ALL'" class="list-group-item list-group-item-action flex-column align-items-start">
+      <div class="list-group">
+        <a (click)="recipientInput.value = ''" class="list-group-item list-group-item-action flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">ALL</h5>
             <small>ALL WINDOWS</small>
           </div>
         </a>
-        <a *ngFor="let win of bcItem.value" (click)="recipientInput.value = win.id"
-           [class.list-group-item-primary]="win.self"
+        <a *ngFor="let win of windows" (click)="recipientInput.value = win.id"
            class="list-group-item list-group-item-action flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ win.name }}</h5>
             <small>ID: {{ win.id }}</small>
+            <small>Channels: {{ win.channels }}</small>
           </div>
-          <small class="mb-1">
-            <span *ngIf="win.self">Current window</span>
-            <span *ngIf="!win.self">Other window</span>
-          </small>
         </a>
       </div>
     </div>
@@ -88,7 +84,7 @@
       <form>
         <div class="form-group">
           <label for="recipientInput">Recipient Window Id</label>
-          <input type="text" class="form-control" id="recipientInput" #recipientInput required readonly value="ALL">
+          <input type="text" class="form-control" id="recipientInput" #recipientInput required readonly value="">
           <small id="recipientInputHelp" class="form-text text-muted">Select a window from the list of known windows
           </small>
         </div>

@@ -1,7 +1,9 @@
 import {ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit} from '@angular/core';
-import {KnownWindows, Message, MessageTemplate, MessageType, MultiWindowService} from 'ngx-multi-window';
 import {Subscription} from "rxjs";
 import {NameGeneratorService} from "./providers/name-generator.service";
+import { KnownWindows } from "../../projects/ngx-multi-window/src/lib/types/window.type";
+import { MultiWindowService } from "../../projects/ngx-multi-window/src/lib/providers/multi-window.service";
+import { Message, MessageTemplate, MessageType } from "../../projects/ngx-multi-window/src/lib/types/message.type";
 
 @Component({
   selector: 'app-root',
@@ -9,23 +11,18 @@ import {NameGeneratorService} from "./providers/name-generator.service";
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  ownName: string;
-  ownId: string;
+  ownName: string = "";
+  ownId: string = "";
 
   logs: string[] = [];
 
-  newName: string;
+  newName: string = "";
 
   windows: KnownWindows = {};
 
   private subs: Subscription = new Subscription();
 
   constructor(private multiWindowService: MultiWindowService, private changeDetectorRef: ChangeDetectorRef, private nameGenerator: NameGeneratorService) {}
-
-  public pause(milliseconds) {
-    var dt = new Date();
-    while ((new Date().getTime()) - dt.getTime() <= milliseconds) { /* Do nothing */ }
-  }
 
   public changeName() {
     this.ownName = this.newName;

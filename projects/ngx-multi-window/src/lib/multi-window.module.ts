@@ -1,12 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { ModuleWithProviders, NgModule } from '@angular/core';
-
-import { MultiWindowService } from './providers/multi-window.service';
+import { NgModule } from '@angular/core';
+import { MultiWindowService } from "./providers/multi-window.service";
 
 @NgModule({
-  imports: [CommonModule],
+  declarations: [],
+  imports: [],
+  exports: [],
   providers: [
     MultiWindowService,
-  ],
+  ]
 })
-export class MultiWindowModule {}
+export class MultiWindowModule {
+}

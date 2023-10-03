@@ -11,10 +11,9 @@ import {
 } from '../types/message.type';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class MultiWindowService implements OnDestroy {
-
   private myWindow: KnownAppWindow = {} as KnownAppWindow;
 
   public getMyWindow(): KnownAppWindow {
@@ -95,7 +94,7 @@ export class MultiWindowService implements OnDestroy {
     }
     const bc = new BroadcastChannel(broadcastChannelId);
     this.knownBroadcasters[bc.name] = bc;
-    this.messageSubjects[bc.name] = new Subject<Message>();
+    this.messageSubjects[bc.name as any] = new Subject<Message>();
     return bc;
   }
 
@@ -108,7 +107,7 @@ export class MultiWindowService implements OnDestroy {
       name: this.myWindow.name,
       self: true
     } as KnownAppWindow);
-    if (this.knownListeners[bc.name] == undefined) {
+    if (this.knownListeners[bc.name as any] == undefined) {
       bc.onmessage = (message: any) => {
         let msg = message.data;
         if (msg.isInternal != undefined) {
@@ -152,10 +151,10 @@ export class MultiWindowService implements OnDestroy {
         switch (msg.type) {
           case MessageType.SPECIFIC_WINDOW:
             if (msg.recipientId == this.myWindow.id)
-              this.messageSubjects[bc.name].next(msg);
+              this.messageSubjects[bc.name as any].next(msg);
             break;
           case MessageType.ALL_LISTENERS:
-            this.messageSubjects[bc.name].next(msg);
+            this.messageSubjects[bc.name as any].next(msg);
             break;
         }
       }
@@ -173,9 +172,9 @@ export class MultiWindowService implements OnDestroy {
   }
 
   public closeListener(broadcastChannelId: string) {
-    if (this.knownListeners[broadcastChannelId] != undefined) {
+    if (this.knownListeners[broadcastChannelId as any] != undefined) {
       this.getBroadcastChannel(broadcastChannelId).close();
-      delete this.knownListeners[broadcastChannelId];
+      delete this.knownListeners[broadcastChannelId as any];
     }
   }
   public closeAllListeners() {
@@ -193,7 +192,7 @@ export class MultiWindowService implements OnDestroy {
   }
 
   public onMessage(broadcastChannelId: string): Observable<Message> {
-    return this.messageSubjects[broadcastChannelId].asObservable();
+    return this.messageSubjects[broadcastChannelId as any].asObservable();
   }
 
   /**
@@ -229,7 +228,7 @@ export class MultiWindowService implements OnDestroy {
     msg.senderId = this.myWindow.id;
     switch (msg.type) {
       case InternalMessageType.SPECIFIC_LISTENER:
-        this.getBroadcastChannel(broadcastId).postMessage(msg);
+        this.getBroadcastChannel(broadcastId || '').postMessage(msg);
         break;
       default:
         for (const bc of this.getKnownBroadcasters()) {
@@ -243,7 +242,7 @@ export class MultiWindowService implements OnDestroy {
     msg.senderId = this.myWindow.id;
     switch (msg.type) {
       case MessageType.SPECIFIC_LISTENER:
-        this.getBroadcastChannel(broadcastId).postMessage(msg);
+        this.getBroadcastChannel(broadcastId || '').postMessage(msg);
         break;
       default:
         for (const bc of this.getKnownBroadcasters()) {

@@ -1,4 +1,4 @@
-import {TestBed, waitForAsync} from '@angular/core/testing';
+import {TestBed, async} from '@angular/core/testing';
 import {AppComponent} from './app.component';
 import {NGXMW_CONFIG} from 'ngx-multi-window';
 import {FormsModule} from '@angular/forms';
@@ -9,7 +9,7 @@ const multiWindowConfig = {
 };
 
 describe('AppComponent', () => {
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
         AppComponent,
